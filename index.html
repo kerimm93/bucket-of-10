@@ -1,0 +1,1101 @@
+<!DOCTYPE html><html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Bucket of Ten</title>
+  <style>
+    :root {
+      --bg: #111110;
+      --bg-mid: #161614;
+      --surface: #1c1c1a;
+      --surface-2: #222220;
+      --surface-3: #2a2a27;
+      --border: #2c2c29;
+      --border-mid: #3a3a36;
+      --ink: #e6e4dc;
+      --ink-mid: #9a9890;
+      --ink-dim: #4e4c46;
+      --accent: #c4b48e;
+      --green: #6a9870;
+      --green-bg: rgba(106,152,112,0.10);
+      --red: #9e5a52;
+      --red-bg: rgba(158,90,82,0.10);
+      --blue: #6282a0;
+      --blue-bg: rgba(98,130,160,0.10);
+      --shadow: 0 10px 30px rgba(0,0,0,0.28);
+      --touch: 44px;
+      --max: 1320px;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body { min-height: 100vh; }
+    a { color: var(--accent); }
+    button, input, textarea, select { font: inherit; }
+    .app {
+      width: min(var(--max), calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 16px 0 80px;
+    }
+    .topbar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .titlebox, .toolbarbox {
+      background: linear-gradient(180deg, var(--surface-2), var(--surface));
+      border: 1px solid var(--border-mid);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+    }
+    .titlebox { flex: 1 1 620px; }
+    .toolbarbox { flex: 0 1 360px; }
+    .titlebox h1 {
+      margin: 0 0 6px;
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--ink-mid);
+      line-height: 1.5;
+    }
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
+      height: 100%;
+    }
+    .btn {
+      min-height: var(--touch);
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border-mid);
+      background: var(--surface-2);
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .btn:hover { border-color: var(--accent); }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary {
+      color: var(--accent);
+      background: linear-gradient(180deg, rgba(196,180,142,0.18), rgba(196,180,142,0.08));
+    }
+    .btn.green { color: var(--green); background: var(--green-bg); border-color: rgba(106,152,112,0.35); }
+    .btn.red { color: var(--red); background: var(--red-bg); border-color: rgba(158,90,82,0.35); }
+    .btn.blue { color: var(--blue); background: var(--blue-bg); border-color: rgba(98,130,160,0.35); }
+    .btn.small {
+      min-height: 34px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+    }
+    .btn.ghost { background: transparent; }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .tab {
+      min-height: var(--touch);
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border-mid);
+      background: var(--surface);
+      color: var(--ink-mid);
+      cursor: pointer;
+    }
+    .tab.active {
+      color: var(--ink);
+      border-color: var(--accent);
+      background: rgba(196,180,142,0.12);
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 16px;
+    }
+    .stack { display: grid; gap: 16px; }
+    .panel {
+      background: linear-gradient(180deg, var(--surface), var(--surface-2));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+    .hidden { display: none !important; }
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .section-head h2 {
+      margin: 0 0 6px;
+      font-size: 1rem;
+      color: var(--accent);
+    }
+    .meta {
+      margin: 0;
+      color: var(--ink-mid);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(255,255,255,0.02);
+    }
+    .stat .label {
+      color: var(--ink-mid);
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+    .stat .value {
+      font-size: 1.12rem;
+      font-weight: 700;
+    }
+    .notice {
+      border-left: 3px solid var(--accent);
+      background: rgba(196,180,142,0.08);
+      color: var(--ink-mid);
+      padding: 10px 12px;
+      border-radius: 0 10px 10px 0;
+      line-height: 1.5;
+    }
+    .bucket-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .bucket-item {
+      border: 1px solid var(--border-mid);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255,255,255,0.02);
+      display: grid;
+      gap: 8px;
+    }
+    .bucket-item.done {
+      border-color: rgba(106,152,112,0.45);
+      background: rgba(106,152,112,0.08);
+    }
+    .bucket-head {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .bucket-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      background: rgba(196,180,142,0.14);
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .field, .textarea, .select, .bucket-title {
+      width: 100%;
+      background: var(--bg-mid);
+      border: 1px solid var(--border-mid);
+      border-radius: 10px;
+      color: var(--ink);
+      padding: 10px 12px;
+      min-height: 42px;
+    }
+    .textarea { min-height: 110px; resize: vertical; }
+    .bucket-title { min-height: 42px; }
+    .inline-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .bucket-actions, .row-actions, .pillrow {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .checkline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ink-mid);
+      font-size: 0.9rem;
+    }
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+    }
+    .card-list {
+      display: grid;
+      gap: 10px;
+    }
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(255,255,255,0.02);
+    }
+    .card h3 {
+      margin: 0 0 6px;
+      font-size: 0.96rem;
+    }
+    .smallmeta {
+      color: var(--ink-mid);
+      font-size: 0.82rem;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    .pill {
+      border: 1px solid var(--border-mid);
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      color: var(--ink-mid);
+    }
+    .codebox {
+      width: 100%;
+      min-height: 180px;
+      resize: vertical;
+      border-radius: 12px;
+      border: 1px solid var(--border-mid);
+      background: #0d0d0c;
+      color: #dbd7cc;
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+    .footer-note {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: var(--ink-dim);
+      line-height: 1.5;
+    }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 700px) {
+      .bucket-grid, .inline-grid, .stats { grid-template-columns: 1fr; }
+      .app { width: min(var(--max), calc(100vw - 16px)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="titlebox">
+        <h1>🎯 Bucket of Ten</h1>
+        <p class="subtitle">Eine Weekly-Selection-App: Kontext ist Material. Fokus ist Verbindlichkeit. Die Zehn sind die einzige echte Aufgabenliste.</p>
+      </div>
+      <div class="toolbarbox">
+        <div class="toolbar">
+          <button class="btn primary" onclick="startNewWeek()">Neue Woche</button>
+          <button class="btn blue" onclick="fillDemoData()">Demo-Daten</button>
+          <button class="btn" onclick="exportData()">Export</button>
+          <label class="btn ghost" for="importFile">Import</label>
+          <input id="importFile" class="hidden" type="file" accept="application/json" onchange="importData(event)">
+        </div>
+      </div>
+    </div><div class="tabs">
+  <button class="tab active" data-tab="focus" onclick="switchTab('focus')">Fokus</button>
+  <button class="tab" data-tab="context" onclick="switchTab('context')">Kontext</button>
+  <button class="tab" data-tab="review" onclick="switchTab('review')">Reset / Review</button>
+  <button class="tab" data-tab="studio" onclick="switchTab('studio')">Prompt Studio</button>
+</div>
+
+<div class="layout">
+  <div class="stack">
+    <section class="panel" id="panel-focus">
+      <div class="section-head">
+        <div>
+          <h2>Aktuelle Bucket of Ten</h2>
+          <p class="meta" id="currentWeekLabel">Noch keine Woche angelegt.</p>
+        </div>
+        <div class="row-actions">
+          <button class="btn small" onclick="clearCurrentBucket()">Liste leeren</button>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="label">Erledigt</div><div class="value" id="statDone">0 / 10</div></div>
+        <div class="stat"><div class="label">Pflicht</div><div class="value" id="statPflicht">0</div></div>
+        <div class="stat"><div class="label">Wachstum</div><div class="value" id="statWachstum">0</div></div>
+        <div class="stat"><div class="label">Pflege / Kreativ</div><div class="value" id="statOther">0</div></div>
+      </div>
+
+      <div class="notice">Diese zehn Felder sind bewusst knapp. Alles außerhalb davon ist nicht „noch eine To-do-Liste“, sondern Kontextmaterial für Auswahl und Review.</div>
+
+      <div class="bucket-grid" id="bucketGrid"></div>
+      <div class="footer-note">Die App darf verdichten, spiegeln, fragen und Kandidaten vorschlagen. Die endgültige Formulierung deiner zehn Aufgaben soll aber möglichst von dir selbst kommen.</div>
+    </section>
+
+    <section class="panel hidden" id="panel-context">
+      <div class="section-head">
+        <div>
+          <h2>Kontext</h2>
+          <p class="meta">Projekte, externe Links und Material, aus dem du deine Wochenliste auswählst.</p>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card">
+          <h3>Projekt hinzufügen</h3>
+          <div class="inline-grid">
+            <input class="field" id="newProjectTitle" placeholder="Projektname">
+            <input class="field" id="newProjectLink" placeholder="Link zu Obsidian, Google Docs, GPT, Reader ...">
+          </div>
+          <textarea class="textarea" id="newProjectNotes" placeholder="Worum geht es? Warum ist dieses Projekt relevant? Welche Notizen oder Ressourcen gehören dazu?"></textarea>
+          <div class="row-actions" style="margin-top:10px;">
+            <button class="btn primary" onclick="addProject()">Projekt speichern</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Ressource hinzufügen</h3>
+          <div class="inline-grid">
+            <input class="field" id="newResTitle" placeholder="Titel / Label">
+            <input class="field" id="newResUrl" placeholder="URL, Obsidian-Link oder Dokumentpfad">
+          </div>
+          <div class="inline-grid" style="margin-top:10px;">
+            <select class="select" id="newResType">
+              <option value="gpt">GPT / Chat</option>
+              <option value="obsidian">Obsidian</option>
+              <option value="doc">Doc / Datei</option>
+              <option value="reader">Readwise Reader</option>
+              <option value="zotero">Zotero</option>
+              <option value="raindrop">Raindrop</option>
+              <option value="other">Sonstiges</option>
+            </select>
+            <input class="field" id="newResProject" placeholder="Projektbezug (optional)">
+          </div>
+          <textarea class="textarea" id="newResReason" placeholder="Warum ist diese Ressource gerade wichtig?"></textarea>
+          <div class="row-actions" style="margin-top:10px;">
+            <button class="btn primary" onclick="addResource()">Ressource speichern</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Projekte</h3>
+          <div class="card-list" id="projectList"></div>
+        </div>
+
+        <div class="card">
+          <h3>Ressourcen</h3>
+          <div class="card-list" id="resourceList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel hidden" id="panel-review">
+      <div class="section-head">
+        <div>
+          <h2>Reset / Review</h2>
+          <p class="meta">Vom diffusen Material zur bewussten Auswahl. Erst Spiegelung, dann Reduktion, dann Kandidaten.</p>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card">
+          <h3>Rohmaterial</h3>
+          <textarea class="textarea" id="reviewRaw" placeholder="Weekly Review, Bullet Journal, Braindump, Sprachreflexion oder freie Notizen hier einfügen..."></textarea>
+          <div class="row-actions" style="margin-top:10px;">
+            <button class="btn primary" onclick="buildReviewPrompt()">Analyse-Prompt erzeugen</button>
+            <button class="btn" onclick="buildDeepPrompt()">Deep-Review-Prompt erzeugen</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Leitfragen</h3>
+          <div class="card-list" id="questionList"></div>
+        </div>
+
+        <div class="card">
+          <h3>Eigene Verdichtung</h3>
+          <textarea class="textarea" id="reviewNotes" placeholder="Was zieht wirklich? Was ist nur Busywork? Was kehrt wieder? Welche wichtigen, aber nicht dringenden Dinge drohen wieder unterzugehen?"></textarea>
+          <div class="row-actions" style="margin-top:10px;">
+            <button class="btn" onclick="addCandidateFromReview()">Verdichtung als Kandidat übernehmen</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Kandidaten</h3>
+          <div class="card-list" id="candidateList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel hidden" id="panel-studio">
+      <div class="section-head">
+        <div>
+          <h2>Prompt Studio</h2>
+          <p class="meta">Hier erzeugst du Prompts, kopierst Antworten zurück und importierst bereinigtes JSON.</p>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card">
+          <h3>Prompt-Ausgabe</h3>
+          <textarea class="codebox" id="promptOut" placeholder="Hier erscheinen generierte Prompts..."></textarea>
+          <div class="row-actions" style="margin-top:10px;">
+            <button class="btn primary" onclick="copyField('promptOut')">Prompt kopieren</button>
+            <button class="btn" onclick="buildCleanupPrompt()">Bereinigungs-Prompt erzeugen</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Strukturierte Antwort / JSON</h3>
+          <textarea class="codebox" id="jsonIn" placeholder='Hier JSON oder strukturierte GPT-Antwort einfügen...'></textarea>
+          <div class="row-actions" style="margin-top:10px;">
+            <button class="btn primary" onclick="importStructuredJson()">JSON importieren</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="stack">
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <h2>Wochenverlauf</h2>
+          <p class="meta">Vorherige Buckets als scrollbarer Verlauf.</p>
+        </div>
+      </div>
+      <div class="card-list" id="historyList"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <h2>V1-Fokus</h2>
+          <p class="meta">Diese erste Version ist absichtlich begrenzt.</p>
+        </div>
+      </div>
+      <div class="notice">V1 soll noch nicht dein komplettes Second Brain nachbauen. Sie soll zuerst das Kernprinzip sauber verkörpern: Kontext sammeln, Review ermöglichen, Bucket formulieren.</div>
+    </section>
+  </div>
+</div>
+
+  </div>  <script>
+    var LKEY = 'bucket_of_ten_v1';
+    var S = {
+      projects: [],
+      resources: [],
+      candidateSteps: [],
+      bucketWeeks: [],
+      currentWeekId: '',
+      promptDrafts: { review: '', deep: '', cleanup: '' },
+      _lastSaved: ''
+    };
+
+    var DEFAULT_QUESTIONS = [
+      'Was fühlt sich gerade dringlich an, ist aber innerlich leer?',
+      'Welche Themen kehren immer wieder zurück?',
+      'Wo weichst du auf Beschäftigung aus statt auf Fokus?',
+      'Was wäre wichtig, auch ohne äußere Deadline?',
+      'Welche Aufgabe würde dich diese Woche wirklich wachsen lassen?',
+      'Welche Dinge gehören bewusst nicht in diese Woche?',
+      'Welche Projekte ziehen dich innerlich wirklich an?',
+      'Was ist Pflicht, was Pflege, was Wachstum, was kreativ?'
+    ];
+
+    function uid() {
+      return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    }
+
+    function today() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function val(id, next) {
+      var el = document.getElementById(id);
+      if (!el) return '';
+      if (arguments.length > 1) el.value = next;
+      return el.value || '';
+    }
+
+    function escHtml(s) {
+      return String(s || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escAttr(s) {
+      return escHtml(s).replace(/'/g, '&#39;');
+    }
+
+    function save() {
+      S._lastSaved = new Date().toISOString();
+      localStorage.setItem(LKEY, JSON.stringify(S));
+      renderAll();
+    }
+
+    function load() {
+      try {
+        var raw = localStorage.getItem(LKEY);
+        if (raw) {
+          var parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') S = parsed;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      ensureDefaults();
+      if (!S.currentWeekId) startNewWeek(true);
+      else renderAll();
+    }
+
+    function ensureDefaults() {
+      if (!Array.isArray(S.projects)) S.projects = [];
+      if (!Array.isArray(S.resources)) S.resources = [];
+      if (!Array.isArray(S.candidateSteps)) S.candidateSteps = [];
+      if (!Array.isArray(S.bucketWeeks)) S.bucketWeeks = [];
+      if (!S.promptDrafts || typeof S.promptDrafts !== 'object') S.promptDrafts = { review: '', deep: '', cleanup: '' };
+      if (!S.currentWeekId) S.currentWeekId = '';
+    }
+
+    function defaultBucketItems() {
+      var arr = [];
+      for (var i = 1; i <= 10; i++) {
+        arr.push({ id: uid(), index: i, title: '', notes: '', type: 'pflicht', done: false });
+      }
+      return arr;
+    }
+
+    function getCurrentWeek() {
+      return S.bucketWeeks.find(function(w){ return w.id === S.currentWeekId; }) || null;
+    }
+
+    function weekLabel() {
+      var d = new Date();
+      return 'Woche ab ' + d.toLocaleDateString('de-DE');
+    }
+
+    function startNewWeek(silent) {
+      var current = getCurrentWeek();
+      if (!silent && current && current.items.some(function(i){ return (i.title || '').trim(); })) {
+        if (!confirm('Neue Woche anlegen? Die aktuelle Bucket bleibt im Verlauf erhalten.')) return;
+      }
+      var week = { id: uid(), createdAt: new Date().toISOString(), label: weekLabel(), items: defaultBucketItems() };
+      S.bucketWeeks.unshift(week);
+      S.currentWeekId = week.id;
+      save();
+    }
+
+    function clearCurrentBucket() {
+      var week = getCurrentWeek();
+      if (!week) return;
+      if (!confirm('Aktuelle Bucket wirklich leeren?')) return;
+      week.items = defaultBucketItems();
+      save();
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(function(el){
+        el.classList.toggle('active', el.getAttribute('data-tab') === tab);
+      });
+      document.getElementById('panel-focus').classList.toggle('hidden', tab !== 'focus');
+      document.getElementById('panel-context').classList.toggle('hidden', tab !== 'context');
+      document.getElementById('panel-review').classList.toggle('hidden', tab !== 'review');
+      document.getElementById('panel-studio').classList.toggle('hidden', tab !== 'studio');
+    }
+
+    function renderAll() {
+      renderCurrentWeek();
+      renderHistory();
+      renderProjects();
+      renderResources();
+      renderQuestions();
+      renderCandidates();
+      document.getElementById('promptOut').value = S.promptDrafts.review || S.promptDrafts.deep || S.promptDrafts.cleanup || '';
+    }
+
+    function renderCurrentWeek() {
+      var week = getCurrentWeek();
+      var grid = document.getElementById('bucketGrid');
+      var label = document.getElementById('currentWeekLabel');
+      if (!week) {
+        label.textContent = 'Noch keine Woche angelegt.';
+        grid.innerHTML = '<div class="notice">Keine aktive Woche vorhanden.</div>';
+        return;
+      }
+      label.textContent = week.label;
+      grid.innerHTML = week.items.map(function(item){
+        return '<div class="bucket-item ' + (item.done ? 'done' : '') + '">' +
+          '<div class="bucket-head">' +
+            '<div class="bucket-number">' + item.index + '</div>' +
+            '<input class="bucket-title" value="' + escAttr(item.title) + '" placeholder="Aufgabe ' + item.index + ' bewusst formulieren..." oninput="updateBucketTitle(\'' + item.id + '\', this.value)">' +
+          '</div>' +
+          '<div class="inline-grid">' +
+            '<select class="select" onchange="updateBucketType(\'' + item.id + '\', this.value)">' + selectOptions(item.type) + '</select>' +
+            '<input class="field" value="' + escAttr(item.notes) + '" placeholder="Kommentar / Kontext" oninput="updateBucketNotes(\'' + item.id + '\', this.value)">' +
+          '</div>' +
+          '<div class="bucket-actions">' +
+            '<label class="checkline"><input type="checkbox" ' + (item.done ? 'checked' : '') + ' onchange="toggleBucketDone(\'' + item.id + '\', this.checked)"> erledigt</label>' +
+            '<button class="btn small ghost" onclick="fillBucketFromFirstCandidate(\'' + item.id + '\')">mit Kandidat füllen</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      renderStats(week);
+    }
+
+    function renderStats(week) {
+      var done = week.items.filter(function(i){ return i.done; }).length;
+      var pflicht = week.items.filter(function(i){ return i.type === 'pflicht' && (i.title || '').trim(); }).length;
+      var wachstum = week.items.filter(function(i){ return i.type === 'wachstum' && (i.title || '').trim(); }).length;
+      var other = week.items.filter(function(i){ return (i.type === 'pflege' || i.type === 'kreativ') && (i.title || '').trim(); }).length;
+      document.getElementById('statDone').textContent = done + ' / 10';
+      document.getElementById('statPflicht').textContent = pflicht;
+      document.getElementById('statWachstum').textContent = wachstum;
+      document.getElementById('statOther').textContent = other;
+    }
+
+    function selectOptions(current) {
+      var opts = [
+        ['pflicht', 'Pflicht'],
+        ['pflege', 'Pflege'],
+        ['wachstum', 'Wachstum'],
+        ['kreativ', 'Kreativ']
+      ];
+      return opts.map(function(opt){
+        return '<option value="' + opt[0] + '" ' + (current === opt[0] ? 'selected' : '') + '>' + opt[1] + '</option>';
+      }).join('');
+    }
+
+    function findBucketItem(id) {
+      var week = getCurrentWeek();
+      if (!week) return null;
+      return week.items.find(function(i){ return i.id === id; }) || null;
+    }
+
+    function updateBucketTitle(id, value) {
+      var item = findBucketItem(id);
+      if (!item) return;
+      item.title = value;
+      save();
+    }
+
+    function updateBucketNotes(id, value) {
+      var item = findBucketItem(id);
+      if (!item) return;
+      item.notes = value;
+      save();
+    }
+
+    function updateBucketType(id, value) {
+      var item = findBucketItem(id);
+      if (!item) return;
+      item.type = value;
+      save();
+    }
+
+    function toggleBucketDone(id, checked) {
+      var item = findBucketItem(id);
+      if (!item) return;
+      item.done = checked;
+      save();
+    }
+
+    function fillBucketFromFirstCandidate(bucketId) {
+      var item = findBucketItem(bucketId);
+      var cand = S.candidateSteps[0];
+      if (!item || !cand) {
+        alert('Keine Kandidaten vorhanden.');
+        return;
+      }
+      item.title = cand.title || '';
+      item.notes = cand.projectRef || cand.whyNow || '';
+      if (['pflicht','pflege','wachstum','kreativ'].indexOf(cand.type) >= 0) item.type = cand.type;
+      save();
+    }
+
+    function renderHistory() {
+      var box = document.getElementById('historyList');
+      if (!S.bucketWeeks.length) {
+        box.innerHTML = '<div class="notice">Noch kein Verlauf vorhanden.</div>';
+        return;
+      }
+      box.innerHTML = S.bucketWeeks.map(function(week){
+        var filled = week.items.filter(function(i){ return (i.title || '').trim(); }).length;
+        var done = week.items.filter(function(i){ return i.done; }).length;
+        var preview = week.items.filter(function(i){ return (i.title || '').trim(); }).slice(0, 3).map(function(i){ return '<li>' + escHtml(i.title) + '</li>'; }).join('');
+        return '<div class="card">' +
+          '<div class="section-head" style="margin-bottom:8px;">' +
+            '<div>' +
+              '<h3>' + escHtml(week.label) + '</h3>' +
+              '<div class="smallmeta">' + filled + ' gefüllt · ' + done + ' erledigt</div>' +
+            '</div>' +
+            '<button class="btn small" onclick="openWeek(\'' + week.id + '\')">öffnen</button>' +
+          '</div>' +
+          (preview ? '<ul style="margin:0;padding-left:18px;">' + preview + '</ul>' : '<div class="smallmeta">Noch leer.</div>') +
+        '</div>';
+      }).join('');
+    }
+
+    function openWeek(id) {
+      S.currentWeekId = id;
+      save();
+      switchTab('focus');
+    }
+
+    function addProject() {
+      var title = val('newProjectTitle').trim();
+      if (!title) return alert('Bitte einen Projektnamen eingeben.');
+      S.projects.unshift({ id: uid(), title: title, link: val('newProjectLink').trim(), notes: val('newProjectNotes').trim(), createdAt: new Date().toISOString() });
+      val('newProjectTitle', '');
+      val('newProjectLink', '');
+      val('newProjectNotes', '');
+      save();
+    }
+
+    function addResource() {
+      var title = val('newResTitle').trim();
+      if (!title) return alert('Bitte einen Ressourcentitel eingeben.');
+      S.resources.unshift({
+        id: uid(),
+        title: title,
+        url: val('newResUrl').trim(),
+        type: val('newResType').trim(),
+        projectRef: val('newResProject').trim(),
+        reason: val('newResReason').trim(),
+        createdAt: new Date().toISOString()
+      });
+      val('newResTitle', '');
+      val('newResUrl', '');
+      val('newResType', 'gpt');
+      val('newResProject', '');
+      val('newResReason', '');
+      save();
+    }
+
+    function renderProjects() {
+      var box = document.getElementById('projectList');
+      if (!S.projects.length) {
+        box.innerHTML = '<div class="smallmeta">Noch keine Projekte vorhanden.</div>';
+        return;
+      }
+      box.innerHTML = S.projects.map(function(p){
+        return '<div class="card">' +
+          '<h3>' + escHtml(p.title) + '</h3>' +
+          '<div class="smallmeta">' + (p.link ? '<a target="_blank" rel="noopener noreferrer" href="' + escAttr(p.link) + '">Link öffnen</a>' : 'Kein Link') + '</div>' +
+          '<div>' + escHtml(p.notes || '') + '</div>' +
+          '<div class="pillrow" style="margin-top:8px;">' +
+            '<span class="pill">Projekt</span>' +
+            '<button class="btn small ghost" onclick="candidateFromProject(\'' + p.id + '\')">Kandidat erzeugen</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function renderResources() {
+      var box = document.getElementById('resourceList');
+      if (!S.resources.length) {
+        box.innerHTML = '<div class="smallmeta">Noch keine Ressourcen vorhanden.</div>';
+        return;
+      }
+      box.innerHTML = S.resources.map(function(r){
+        return '<div class="card">' +
+          '<h3>' + escHtml(r.title) + '</h3>' +
+          '<div class="smallmeta">' + escHtml(r.type || 'other') + (r.projectRef ? ' · ' + escHtml(r.projectRef) : '') + '</div>' +
+          '<div>' + (r.url ? '<a target="_blank" rel="noopener noreferrer" href="' + escAttr(r.url) + '">' + escHtml(r.url) + '</a>' : '') + '</div>' +
+          (r.reason ? '<div style="margin-top:8px;">' + escHtml(r.reason) + '</div>' : '') +
+        '</div>';
+      }).join('');
+    }
+
+    function renderQuestions() {
+      document.getElementById('questionList').innerHTML = DEFAULT_QUESTIONS.map(function(q){
+        return '<div class="card"><strong>' + escHtml(q) + '</strong></div>';
+      }).join('');
+    }
+
+    function candidateFromProject(projectId) {
+      var p = S.projects.find(function(x){ return x.id === projectId; });
+      if (!p) return;
+      S.candidateSteps.unshift({
+        id: uid(),
+        title: 'Nächsten konkreten Schritt für ' + p.title + ' formulieren',
+        whyNow: p.notes || 'Aus Projektkontext übernommen.',
+        projectRef: p.title,
+        type: 'wachstum',
+        createdAt: new Date().toISOString()
+      });
+      save();
+    }
+
+    function addCandidateFromReview() {
+      var raw = val('reviewNotes').trim();
+      if (!raw) return alert('Bitte erst eine Verdichtungsnotiz schreiben.');
+      S.candidateSteps.unshift({
+        id: uid(),
+        title: raw.split('\n')[0].slice(0, 120),
+        whyNow: raw,
+        projectRef: '',
+        type: 'offen',
+        createdAt: new Date().toISOString()
+      });
+      save();
+    }
+
+    function renderCandidates() {
+      var box = document.getElementById('candidateList');
+      if (!S.candidateSteps.length) {
+        box.innerHTML = '<div class="smallmeta">Noch keine Kandidaten vorhanden.</div>';
+        return;
+      }
+      box.innerHTML = S.candidateSteps.map(function(c){
+        return '<div class="card">' +
+          '<h3>' + escHtml(c.title || '(ohne Titel)') + '</h3>' +
+          '<div class="smallmeta">' + escHtml(c.projectRef || 'ohne Projekt') + ' · ' + escHtml(c.type || 'offen') + '</div>' +
+          (c.whyNow ? '<div>' + escHtml(c.whyNow) + '</div>' : '') +
+          '<div class="pillrow" style="margin-top:8px;">' +
+            '<button class="btn small" onclick="moveCandidateToBucket(\'' + c.id + '\')">in Bucket</button>' +
+            '<button class="btn small ghost" onclick="deleteCandidate(\'' + c.id + '\')">löschen</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function moveCandidateToBucket(id) {
+      var cand = S.candidateSteps.find(function(c){ return c.id === id; });
+      var week = getCurrentWeek();
+      if (!cand || !week) return;
+      var empty = week.items.find(function(i){ return !(i.title || '').trim(); });
+      if (!empty) return alert('Die aktuelle Bucket of Ten ist bereits voll.');
+      empty.title = cand.title || '';
+      empty.notes = cand.projectRef || cand.whyNow || '';
+      if (['pflicht','pflege','wachstum','kreativ'].indexOf(cand.type) >= 0) empty.type = cand.type;
+      save();
+    }
+
+    function deleteCandidate(id) {
+      S.candidateSteps = S.candidateSteps.filter(function(c){ return c.id !== id; });
+      save();
+    }
+
+    function buildReviewPrompt() {
+      var raw = val('reviewRaw').trim();
+      var projects = S.projects.map(function(p){ return '- ' + p.title + (p.notes ? ': ' + p.notes : ''); }).join('\n') || '- keine Projekte hinterlegt';
+      var resources = S.resources.slice(0, 8).map(function(r){ return '- ' + r.title + (r.reason ? ': ' + r.reason : ''); }).join('\n') || '- keine Ressourcen hinterlegt';
+      var prompt = [
+        'Du hilfst mir dabei, mein diffuses Wochenmaterial für meine Bucket-of-Ten-Methode zu verdichten.',
+        '',
+        '## Ziel',
+        'Analysiere das Material nicht als klassische To-do-Liste, sondern als Mischung aus Kontext, Spannungen, Vermeidung, wichtigen aber nicht dringenden Themen und möglichen Fokusfeldern.',
+        '',
+        '## Regeln',
+        '- Keine banale Produktivitätsrhetorik',
+        '- Fokus auf Spiegelung, Verdichtung und qualitative Unterscheidung',
+        '- Beschäftigung von echter Priorität unterscheiden',
+        '- wichtige, aber nicht dringende Themen sichtbar machen',
+        '',
+        '## Hinterlegte Projekte',
+        projects,
+        '',
+        '## Hinterlegte Ressourcen',
+        resources,
+        '',
+        '## Rohmaterial',
+        raw || '(leer)',
+        '',
+        '## Ausgabe',
+        'Gib mir vier Abschnitte:',
+        '1. Energiefresser / falsche Dringlichkeiten',
+        '2. Wiederkehrende Spannungen / Vermeidung',
+        '3. Wichtig, aber nicht dringend',
+        '4. Mögliche Fokusfelder dieser Woche',
+        '',
+        'Formuliere knapp, konkret und ohne Wochenplan.'
+      ].join('\n');
+      S.promptDrafts.review = prompt;
+      document.getElementById('promptOut').value = prompt;
+      switchTab('studio');
+      save();
+    }
+
+    function buildDeepPrompt() {
+      var raw = val('reviewRaw').trim();
+      var prompt = [
+        'Hilf mir in einem tiefen, fragenden Review-Modus dabei, meine Woche nicht nur organisatorisch, sondern auch innerlich zu klären.',
+        '',
+        '## Haltung',
+        '- Stelle gute Fragen statt schneller Lösungen',
+        '- Achte auf Wiederholungen, Vermeidung, Ambivalenz und falsche Dringlichkeiten',
+        '- Hilf mir, meine eigenen Formulierungen zu finden',
+        '- Schlage keine fertige Bucket of Ten vor',
+        '',
+        '## Material',
+        raw || '(leer)',
+        '',
+        '## Aufgabe',
+        'Führe mich durch 6 bis 8 präzise Fragen, die mir helfen, selbst zu formulieren:',
+        '- was mich gerade wirklich zieht',
+        '- wovor ich ausweiche',
+        '- was nur Busywork ist',
+        '- was diese Woche echte Priorität haben sollte',
+        '',
+        'Halte jede Frage knapp und substanziell.'
+      ].join('\n');
+      S.promptDrafts.deep = prompt;
+      document.getElementById('promptOut').value = prompt;
+      switchTab('studio');
+      save();
+    }
+
+    function buildCleanupPrompt() {
+      var raw = val('jsonIn').trim() || '[Antwort hier einfügen]';
+      var prompt = [
+        'Bereinige die folgende Antwort und überführe sie in valides JSON.',
+        '',
+        '## Zielstruktur',
+        '{',
+        '  "candidate_steps": [',
+        '    {',
+        '      "title": "",',
+        '      "projectRef": "",',
+        '      "whyNow": "",',
+        '      "type": "pflicht|pflege|wachstum|kreativ|offen"',
+        '    }',
+        '  ]',
+        '}',
+        '',
+        '## Regeln',
+        '- Nur valides JSON ausgeben',
+        '- Keine Markdown-Formatierung',
+        '- Falls etwas fehlt, leere Strings verwenden',
+        '',
+        '## Eingabe',
+        raw
+      ].join('\n');
+      S.promptDrafts.cleanup = prompt;
+      document.getElementById('promptOut').value = prompt;
+      switchTab('studio');
+      save();
+    }
+
+    function importStructuredJson() {
+      var raw = val('jsonIn').trim();
+      if (!raw) return alert('Bitte erst JSON einfügen.');
+      try {
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed.candidate_steps)) {
+          parsed.candidate_steps.forEach(function(c){
+            S.candidateSteps.unshift({
+              id: uid(),
+              title: c.title || '',
+              projectRef: c.projectRef || '',
+              whyNow: c.whyNow || '',
+              type: c.type || 'offen',
+              createdAt: new Date().toISOString()
+            });
+          });
+          alert(parsed.candidate_steps.length + ' Kandidat(en) importiert.');
+          save();
+          return;
+        }
+        alert('Kein unterstütztes Format gefunden. Erwartet: { "candidate_steps": [...] }');
+      } catch (e) {
+        alert('Ungültiges JSON: ' + e.message);
+      }
+    }
+
+    function copyField(id) {
+      var el = document.getElementById(id);
+      if (!el || !el.value) return;
+      navigator.clipboard.writeText(el.value).then(function(){
+        alert('Kopiert.');
+      }).catch(function(){
+        el.select();
+        document.execCommand('copy');
+        alert('Kopiert.');
+      });
+    }
+
+    function exportData() {
+      var payload = JSON.stringify(S, null, 2);
+      var blob = new Blob([payload], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'bucket-of-ten-export-' + today() + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+    }
+
+    function importData(event) {
+      var file = event.target.files && event.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          var parsed = JSON.parse(e.target.result);
+          if (!parsed || typeof parsed !== 'object') throw new Error('Kein Objekt');
+          S = parsed;
+          ensureDefaults();
+          if (!S.currentWeekId && S.bucketWeeks[0]) S.currentWeekId = S.bucketWeeks[0].id;
+          save();
+          alert('Import erfolgreich.');
+        } catch (err) {
+          alert('Import fehlgeschlagen: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function fillDemoData() {
+      if (S.projects.length || S.resources.length || S.candidateSteps.length) {
+        if (!confirm('Demo-Daten zusätzlich einfügen?')) return;
+      }
+      S.projects.unshift(
+        { id: uid(), title: 'Bucket-of-Ten-App', link: 'obsidian://bucket-of-ten', notes: 'Kernprojekt: Weekly Selection System statt normalem Task-Manager.', createdAt: new Date().toISOString() },
+        { id: uid(), title: 'Romanprojekt Nabokov', link: 'obsidian://nabokov', notes: 'Kreativprojekt mit Entwicklungsbedarf, aber ohne äußere Deadline.', createdAt: new Date().toISOString() }
+      );
+      S.resources.unshift(
+        { id: uid(), title: 'Weekly Review', url: 'obsidian://weekly-review', type: 'obsidian', projectRef: 'Bucket-of-Ten-App', reason: 'Rohmaterial für Reset und Auswahl.', createdAt: new Date().toISOString() },
+        { id: uid(), title: 'GPT-Chat zu Deep Review', url: 'https://chatgpt.com', type: 'gpt', projectRef: 'Bucket-of-Ten-App', reason: 'Fragenorientierte Reflexion statt bloßer Planung.', createdAt: new Date().toISOString() }
+      );
+      S.candidateSteps.unshift(
+        { id: uid(), title: 'Roadmap der Bucket-of-Ten-App fertig formulieren', projectRef: 'Bucket-of-Ten-App', whyNow: 'Klares Architekturdenken vor weiterer Umsetzung.', type: 'pflicht', createdAt: new Date().toISOString() },
+        { id: uid(), title: 'Eine starke Review-Frage für Nabokov ausformulieren', projectRef: 'Romanprojekt Nabokov', whyNow: 'Kreativer Fortschritt ohne äußere Deadline.', type: 'kreativ', createdAt: new Date().toISOString() },
+        { id: uid(), title: 'Busywork aus der Wochenplanung streichen', projectRef: '', whyNow: 'Reduktionsschritt, damit wichtige nicht dringende Dinge Platz bekommen.', type: 'wachstum', createdAt: new Date().toISOString() }
+      );
+      if (!getCurrentWeek()) startNewWeek(true);
+      save();
+    }
+
+    load();
+  </script></body>
+</html>
