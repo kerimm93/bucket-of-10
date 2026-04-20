@@ -1,0 +1,28 @@
+.focus-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.focus-week-label { color: var(--ink-mid); font-size: .9rem; }
+.focus-head-actions { display: flex; align-items: center; gap: 10px; }
+.focus-meta-inline { color: var(--ink-mid); font-size: .85rem; }
+.btn-options { border: 1px solid var(--border-mid); background: var(--surface-2); color: var(--ink-mid); border-radius: 8px; width: 30px; height: 30px; }
+.focus-options-panel { margin-bottom: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+.paper-surface {
+  background: var(--paper-bg);
+  background-image: repeating-linear-gradient(to bottom, transparent 0px, transparent 43px, var(--paper-line) 43px, var(--paper-line) 44px);
+  border-radius: 6px;
+  position: relative;
+  padding: 4px 16px 12px 50px;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+.paper-surface::before { content: ''; position: absolute; left: 38px; top: 0; bottom: 0; width: 1.5px; background: var(--paper-margin); pointer-events: none; }
+.paper-item { color: var(--paper-ink); padding: 2px 0; }
+.paper-item.done .paper-input { text-decoration: line-through; color: var(--paper-ink-mid); }
+.paper-row { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 8px; min-height: 43px; }
+.paper-num { position: absolute; transform: translateX(-24px); color: var(--paper-ink-dim); font-size: .75rem; font-weight: 700; margin-top: 14px; }
+.paper-input, .paper-input:focus { background: transparent; border: none; outline: none; color: var(--paper-ink); padding: 8px 4px; }
+.paper-check { accent-color: #8b7c58; width: 16px; height: 16px; }
+.paper-row-controls { opacity: 0; transition: opacity .14s ease; }
+.paper-item:hover .paper-row-controls, .paper-item:focus-within .paper-row-controls, .paper-item .paper-detail-area { opacity: 1; }
+.btn-paper { background: transparent; border: none; color: rgba(110,92,62,.45); cursor: pointer; }
+.paper-project-hint { font-size: .7rem; color: rgba(120,100,65,.4); padding: 0 4px 3px 21px; }
+.paper-detail-area { margin: 0 0 6px 20px; padding: 10px 10px 10px 12px; border-left: 2px solid rgba(180,162,122,.28); background: rgba(0,0,0,.022); border-radius: 0 6px 6px 0; }
+.paper-mini-stats { color: var(--paper-ink-mid); text-align: right; font-size: .78rem; }

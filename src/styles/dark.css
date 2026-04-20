@@ -1,0 +1,37 @@
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; min-height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+button, input, textarea, select { font: inherit; }
+.app { width: min(var(--max), calc(100vw - 24px)); margin: 0 auto; padding: 16px 0 80px; }
+.topbar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.titlebox, .toolbarbox {
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border-mid);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+}
+.titlebox { flex: 1 1 620px; }
+.toolbarbox { flex: 0 1 360px; }
+.titlebox h1 { margin: 0 0 6px; color: var(--accent); font-size: 1.25rem; }
+.subtitle { margin: 0; color: var(--ink-mid); }
+.toolbar { display: flex; gap: 8px; align-items: center; justify-content: flex-end; height: 100%; }
+.panel {
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.tab { min-height: var(--touch); padding: 10px 14px; border-radius: 999px; border: 1px solid var(--border-mid); background: var(--surface); color: var(--ink-mid); }
+.tab.active { color: var(--ink); border-color: var(--accent); background: rgba(196, 180, 142, 0.12); }
+.btn { min-height: var(--touch); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-mid); background: var(--surface-2); color: var(--ink); cursor: pointer; }
+.btn.primary { color: var(--accent); background: linear-gradient(180deg, rgba(196, 180, 142, 0.18), rgba(196, 180, 142, 0.08)); }
+.btn.small { min-height: 34px; padding: 6px 10px; border-radius: 8px; font-size: .88rem; }
+.placeholder-panel h2 { margin-top: 0; color: var(--accent); }
+.placeholder-panel p { color: var(--ink-mid); }
