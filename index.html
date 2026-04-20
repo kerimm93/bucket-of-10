@@ -635,6 +635,7 @@
       item.id = item.id || uid();
       item.index = Number(item.index) || fallbackIndex || 1;
       item.title = item.title || '';
+      item.projectId = item.projectId || '';
       item.notes = item.notes || '';
       item.type = ['pflicht','pflege','wachstum','kreativ'].indexOf(item.type) >= 0 ? item.type : 'pflicht';
       item.done = !!item.done;
@@ -704,12 +705,22 @@
       week.items = week.items.map(function(item, idx){ return normalizeBucketItem(item, idx + 1); });
       label.textContent = week.label;
       list.innerHTML = week.items.map(function(item){
+        var project = getProjectById(item.projectId);
+        var projectHint = '';
+        if (item.projectId && project) {
+          projectHint = project.link
+            ? ('<a target="_blank" rel="noopener noreferrer" href="' + escAttr(project.link) + '">' + escHtml(project.title) + '</a>')
+            : escHtml(project.title);
+        } else if (!item.projectId && item.projectRef) {
+          projectHint = escHtml(item.projectRef);
+        }
         var detailsBlock = item.open ? (
           '<div class="bucket-details">' +
             '<div class="inline-grid">' +
               '<select class="select" onchange="updateBucketType(\'' + item.id + '\', this.value)">' + selectOptions(item.type) + '</select>' +
-              '<input class="field" value="' + escAttr(item.projectRef) + '" placeholder="Projektbezug (optional)" oninput="updateBucketProjectRef(\'' + item.id + '\', this.value)">' +
+              '<select class="select" onchange="updateBucketProjectId(\'' + item.id + '\', this.value)">' + projectOptions(item.projectId) + '</select>' +
             '</div>' +
+            (projectHint ? '<div class="smallmeta">Projekt: ' + projectHint + '</div>' : '') +
             '<textarea class="textarea" placeholder="Markdown: Kontext, Unter-Schritte, Why now..." oninput="updateBucketDetails(\'' + item.id + '\', this.value)">' + escHtml(item.details) + '</textarea>' +
             '<div class="md-preview">' + renderMarkdown(item.details) + '</div>' +
           '</div>'
@@ -747,6 +758,19 @@
       return opts.map(function(opt){
         return '<option value="' + opt[0] + '" ' + (current === opt[0] ? 'selected' : '') + '>' + opt[1] + '</option>';
       }).join('');
+    }
+
+    function getProjectById(projectId) {
+      if (!projectId) return null;
+      return S.projects.find(function(p){ return p.id === projectId; }) || null;
+    }
+
+    function projectOptions(selectedProjectId) {
+      var base = '<option value="">(kein Projekt)</option>';
+      var dynamic = S.projects.map(function(p){
+        return '<option value="' + escAttr(p.id) + '" ' + (selectedProjectId === p.id ? 'selected' : '') + '>' + escHtml(p.title || '(ohne Titel)') + '</option>';
+      }).join('');
+      return base + dynamic;
     }
 
     function findBucketItem(id) {
@@ -807,6 +831,22 @@
       saveSilent();
     }
 
+    function updateBucketProjectId(bucketId, projectId) {
+      var item = findBucketItem(bucketId);
+      if (!item) return;
+      item.projectId = projectId || '';
+      var project = getProjectById(item.projectId);
+      if (project) {
+        item.projectRef = project.title;
+        item.notes = project.title;
+      } else {
+        item.projectRef = '';
+        item.notes = '';
+      }
+      saveSilent();
+      renderCurrentWeek();
+    }
+
     function fillBucketFromFirstCandidate(bucketId) {
       var item = findBucketItem(bucketId);
       var cand = S.candidateSteps[0];
@@ -814,8 +854,10 @@
         alert('Keine Kandidaten vorhanden.');
         return;
       }
+      var project = findProjectByTitle(cand.projectRef || '');
       item.title = cand.title || '';
-      item.projectRef = cand.projectRef || '';
+      item.projectId = project ? project.id : '';
+      item.projectRef = project ? project.title : (cand.projectRef || '');
       item.notes = item.projectRef;
       item.details = cand.whyNow ? ('## Warum jetzt?\n' + cand.whyNow) : (item.details || '');
       item.open = true;
@@ -930,6 +972,7 @@
         id: uid(),
         title: 'Nächsten konkreten Schritt für ' + p.title + ' formulieren',
         whyNow: p.notes || 'Aus Projektkontext übernommen.',
+        projectId: p.id,
         projectRef: p.title,
         type: 'wachstum',
         createdAt: new Date().toISOString()
@@ -976,8 +1019,10 @@
       if (!cand || !week) return;
       var empty = week.items.find(function(i){ return !(i.title || '').trim(); });
       if (!empty) return alert('Die aktuelle Bucket of Ten ist bereits voll.');
+      var project = getProjectById(cand.projectId) || findProjectByTitle(cand.projectRef || '');
       empty.title = cand.title || '';
-      empty.projectRef = cand.projectRef || '';
+      empty.projectId = project ? project.id : '';
+      empty.projectRef = project ? project.title : (cand.projectRef || '');
       empty.notes = empty.projectRef;
       empty.details = cand.whyNow ? ('## Warum jetzt?\n' + cand.whyNow) : (empty.details || '');
       empty.open = true;
@@ -1159,9 +1204,11 @@
         var parsed = JSON.parse(raw);
         if (Array.isArray(parsed.candidate_steps)) {
           parsed.candidate_steps.forEach(function(c){
+            var project = findProjectByTitle(c.projectRef || '');
             S.candidateSteps.unshift({
               id: uid(),
               title: c.title || '',
+              projectId: project ? project.id : '',
               projectRef: c.projectRef || '',
               whyNow: c.whyNow || '',
               type: c.type || 'offen',
@@ -1236,12 +1283,20 @@
         { id: uid(), title: 'GPT-Chat zu Deep Review', url: 'https://chatgpt.com', type: 'gpt', projectRef: 'Bucket-of-Ten-App', reason: 'Fragenorientierte Reflexion statt bloßer Planung.', createdAt: new Date().toISOString() }
       );
       S.candidateSteps.unshift(
-        { id: uid(), title: 'Roadmap der Bucket-of-Ten-App fertig formulieren', projectRef: 'Bucket-of-Ten-App', whyNow: 'Klares Architekturdenken vor weiterer Umsetzung.', type: 'pflicht', createdAt: new Date().toISOString() },
-        { id: uid(), title: 'Eine starke Review-Frage für Nabokov ausformulieren', projectRef: 'Romanprojekt Nabokov', whyNow: 'Kreativer Fortschritt ohne äußere Deadline.', type: 'kreativ', createdAt: new Date().toISOString() },
+        { id: uid(), title: 'Roadmap der Bucket-of-Ten-App fertig formulieren', projectRef: 'Bucket-of-Ten-App', projectId: '', whyNow: 'Klares Architekturdenken vor weiterer Umsetzung.', type: 'pflicht', createdAt: new Date().toISOString() },
+        { id: uid(), title: 'Eine starke Review-Frage für Nabokov ausformulieren', projectRef: 'Romanprojekt Nabokov', projectId: '', whyNow: 'Kreativer Fortschritt ohne äußere Deadline.', type: 'kreativ', createdAt: new Date().toISOString() },
         { id: uid(), title: 'Busywork aus der Wochenplanung streichen', projectRef: '', whyNow: 'Reduktionsschritt, damit wichtige nicht dringende Dinge Platz bekommen.', type: 'wachstum', createdAt: new Date().toISOString() }
       );
       if (!getCurrentWeek()) startNewWeek(true);
       save();
+    }
+
+    function findProjectByTitle(title) {
+      var needle = String(title || '').trim().toLowerCase();
+      if (!needle) return null;
+      return S.projects.find(function(p){
+        return String(p.title || '').trim().toLowerCase() === needle;
+      }) || null;
     }
 
     load();
