@@ -1,0 +1,1619 @@
+<!DOCTYPE html><html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Bucket of Ten</title>
+  <style>
+    :root {
+      --bg: #111110;
+      --bg-mid: #161614;
+      --surface: #1c1c1a;
+      --surface-2: #222220;
+      --surface-3: #2a2a27;
+      --border: #2c2c29;
+      --border-mid: #3a3a36;
+      --ink: #e6e4dc;
+      --ink-mid: #9a9890;
+      --ink-dim: #4e4c46;
+      --accent: #c4b48e;
+      --green: #6a9870;
+      --green-bg: rgba(106,152,112,0.10);
+      --red: #9e5a52;
+      --red-bg: rgba(158,90,82,0.10);
+      --blue: #6282a0;
+      --blue-bg: rgba(98,130,160,0.10);
+      --orange: #b07848;
+      --shadow: 0 10px 30px rgba(0,0,0,0.28);
+      --touch: 44px;
+      --max: 1400px;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body { min-height: 100vh; }
+    a { color: var(--accent); }
+    button, input, textarea, select { font: inherit; }
+    .app {
+      width: min(var(--max), calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 16px 0 80px;
+    }
+    .topbar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .titlebox, .toolbarbox {
+      background: linear-gradient(180deg, var(--surface-2), var(--surface));
+      border: 1px solid var(--border-mid);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+    }
+    .titlebox { flex: 1 1 620px; }
+    .toolbarbox { flex: 0 1 360px; }
+    .titlebox h1 { margin: 0 0 6px; font-size: 1.25rem; color: var(--accent); }
+    .subtitle { margin: 0; color: var(--ink-mid); line-height: 1.5; }
+    .toolbar {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      justify-content: flex-end; align-items: center; height: 100%;
+    }
+    .btn {
+      min-height: var(--touch); padding: 10px 14px;
+      border-radius: 10px; border: 1px solid var(--border-mid);
+      background: var(--surface-2); color: var(--ink);
+      cursor: pointer; transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .btn:hover { border-color: var(--accent); }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { color: var(--accent); background: linear-gradient(180deg, rgba(196,180,142,0.18), rgba(196,180,142,0.08)); }
+    .btn.green { color: var(--green); background: var(--green-bg); border-color: rgba(106,152,112,0.35); }
+    .btn.red { color: var(--red); background: var(--red-bg); border-color: rgba(158,90,82,0.35); }
+    .btn.blue { color: var(--blue); background: var(--blue-bg); border-color: rgba(98,130,160,0.35); }
+    .btn.small { min-height: 34px; padding: 6px 10px; border-radius: 8px; font-size: 0.88rem; }
+    .btn.ghost { background: transparent; }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .tab {
+      min-height: var(--touch); padding: 10px 14px;
+      border-radius: 999px; border: 1px solid var(--border-mid);
+      background: var(--surface); color: var(--ink-mid); cursor: pointer;
+    }
+    .tab.active { color: var(--ink); border-color: var(--accent); background: rgba(196,180,142,0.12); }
+    .layout {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 16px;
+    }
+    .stack { display: grid; gap: 16px; }
+    .panel {
+      background: linear-gradient(180deg, var(--surface), var(--surface-2));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+    .hidden { display: none !important; }
+    .section-head {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;
+    }
+    .section-head h2 { margin: 0 0 6px; font-size: 1rem; color: var(--accent); }
+    .meta { margin: 0; color: var(--ink-mid); font-size: 0.92rem; line-height: 1.45; }
+    .notice {
+      border-left: 3px solid var(--accent);
+      background: rgba(196,180,142,0.08);
+      color: var(--ink-mid);
+      padding: 10px 12px;
+      border-radius: 0 10px 10px 0;
+      line-height: 1.5;
+    }
+    .focus-meta {
+      margin: 8px 0 10px; color: var(--ink-mid); font-size: 0.86rem;
+      border-bottom: 1px solid var(--border); padding-bottom: 8px;
+    }
+    .bucket-list { margin-top: 8px; border-top: 1px solid var(--border); background: rgba(255,255,255,0.01); }
+    .bucket-item { border-bottom: 1px solid var(--border); padding: 8px 0; }
+    .bucket-item.done .bucket-title { text-decoration: line-through; color: var(--ink-mid); }
+    .bucket-row { display: flex; gap: 8px; align-items: center; }
+    .bucket-left { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+    .bucket-number {
+      width: 22px; text-align: center;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex: 0 0 auto; color: var(--ink-mid); font-size: 0.8rem; font-weight: 700;
+    }
+    .field, .textarea, .select, .bucket-title {
+      width: 100%; background: var(--bg-mid);
+      border: 1px solid var(--border-mid); border-radius: 10px;
+      color: var(--ink); padding: 10px 12px; min-height: 42px;
+    }
+    .textarea { min-height: 110px; resize: vertical; }
+    .bucket-title {
+      min-height: 40px; border: 0; border-radius: 0;
+      background: transparent; border-bottom: 1px solid transparent; padding: 8px 6px;
+    }
+    .bucket-title:focus { border-bottom-color: var(--accent); outline: none; }
+    .inline-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .bucket-actions, .row-actions, .pillrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .checkline { display: flex; align-items: center; gap: 8px; color: var(--ink-mid); font-size: 0.9rem; }
+    .bucket-controls { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+    .bucket-details { margin: 8px 0 0 34px; padding: 8px 0 4px; display: grid; gap: 8px; }
+    .md-preview {
+      border: 1px solid var(--border); border-radius: 10px; padding: 10px;
+      background: rgba(255,255,255,0.02); color: var(--ink-mid); font-size: 0.92rem; line-height: 1.45;
+    }
+    .md-preview h3, .md-preview h4, .md-preview h5 { margin: 8px 0 6px; color: var(--ink); }
+    .md-preview p, .md-preview ul { margin: 0 0 8px; }
+    input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+    .card-list { display: grid; gap: 10px; }
+    .card { border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.02); }
+    .card h3 { margin: 0 0 6px; font-size: 0.96rem; }
+    .smallmeta { color: var(--ink-mid); font-size: 0.82rem; margin-bottom: 8px; line-height: 1.4; }
+    .pill {
+      border: 1px solid var(--border-mid); border-radius: 999px;
+      padding: 4px 8px; font-size: 0.75rem; color: var(--ink-mid); display: inline-flex; align-items: center; gap: 4px;
+    }
+    .pill.aktiv { color: var(--green); border-color: rgba(106,152,112,0.4); background: var(--green-bg); }
+    .pill.pausiert { color: var(--orange); border-color: rgba(176,120,72,0.4); background: rgba(176,120,72,0.08); }
+    .pill.archiviert { color: var(--ink-dim); border-color: var(--border); }
+    .codebox {
+      width: 100%; min-height: 180px; resize: vertical; border-radius: 12px;
+      border: 1px solid var(--border-mid); background: #0d0d0c; color: #dbd7cc;
+      padding: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.86rem; line-height: 1.45;
+    }
+    .footer-note { margin-top: 12px; font-size: 0.85rem; color: var(--ink-dim); line-height: 1.5; }
+
+    /* ── Projekte-Tab Layout ── */
+    .projects-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    /* Critical: prevent grid children from overflowing their track */
+    .projects-layout > * { min-width: 0; overflow: hidden; }
+    .projects-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .proj-list-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px;
+    }
+    .proj-list-header span { font-size: 0.8rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .06em; }
+    .proj-list-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      margin-bottom: 6px;
+      transition: border-color .15s, background .15s;
+      background: rgba(255,255,255,0.01);
+    }
+    .proj-list-item:hover { border-color: var(--border-mid); background: rgba(255,255,255,0.025); }
+    .proj-list-item.selected { border-color: var(--accent); background: rgba(196,180,142,0.07); }
+    .proj-list-item.status-pausiert { opacity: 0.6; }
+    .proj-list-item.status-archiviert { opacity: 0.35; }
+    .proj-list-item .proj-item-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
+    .proj-list-item .proj-item-meta { font-size: 0.78rem; color: var(--ink-mid); line-height: 1.35; }
+    .proj-list-item .proj-item-focus {
+      font-size: 0.78rem; color: var(--ink-dim); margin-top: 4px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .proj-list-sep {
+      font-size: 0.72rem; color: var(--ink-dim); text-transform: uppercase;
+      letter-spacing: .07em; padding: 8px 0 4px; margin-top: 6px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Project Detail ── */
+    .proj-detail { display: grid; gap: 14px; }
+    .proj-detail-header {
+      display: flex; gap: 12px; align-items: flex-start; justify-content: space-between;
+    }
+    .field-label { font-size: 0.75rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 5px; }
+    .field-group { display: grid; gap: 5px; }
+    .proj-section { border-top: 1px solid var(--border); padding-top: 12px; display: grid; gap: 10px; }
+    .proj-section-title { font-size: 0.78rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px; }
+
+    /* nextStep compass field */
+    .nextstep-wrap {
+      border: 1px solid rgba(98,130,160,0.35);
+      border-left: 3px solid var(--blue);
+      border-radius: 0 10px 10px 0;
+      background: rgba(98,130,160,0.06);
+      padding: 10px 12px;
+    }
+    .nextstep-label {
+      font-size: 0.72rem; color: var(--blue); text-transform: uppercase;
+      letter-spacing: .08em; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;
+    }
+    .nextstep-wrap textarea {
+      width: 100%; background: transparent; border: none; color: var(--ink);
+      resize: vertical; min-height: 64px; outline: none; font-size: 0.9rem; line-height: 1.5;
+    }
+    .nextstep-hint { font-size: 0.75rem; color: var(--ink-dim); margin-top: 4px; }
+
+    /* resource links row */
+    .resource-links { display: grid; gap: 7px; }
+    .resource-link-row { display: grid; grid-template-columns: 90px 1fr; gap: 8px; align-items: center; }
+    .resource-link-label { font-size: 0.78rem; color: var(--ink-mid); }
+
+    /* divider between projects and resources */
+    .resources-section { margin-top: 20px; }
+    .resources-toggle-btn {
+      background: transparent; border: none; color: var(--ink-dim);
+      font-size: 0.82rem; cursor: pointer; padding: 4px 0;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .resources-toggle-btn:hover { color: var(--ink-mid); }
+
+    .proj-detail-placeholder {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 40px 20px; color: var(--ink-dim); text-align: center; gap: 10px;
+    }
+    .proj-detail-placeholder svg { opacity: 0.25; }
+
+    /* ── Focus mode: hide right column ── */
+    .layout.focus-mode { grid-template-columns: 1fr; }
+    .layout.focus-mode #rightStack { display: none; }
+
+    /* ── Focus panel chrome ── */
+    #panel-focus {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+    }
+    .focus-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2px 12px; gap: 12px;
+    }
+    .focus-week-label { font-size: 0.78rem; color: var(--ink-dim); letter-spacing: .04em; }
+    .focus-meta-inline { font-size: 0.75rem; color: var(--ink-dim); }
+    .btn-options {
+      background: transparent; border: 1px solid var(--border); color: var(--ink-dim);
+      cursor: pointer; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem;
+    }
+    .btn-options:hover { color: var(--ink-mid); border-color: var(--border-mid); }
+    .focus-options-panel {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      padding: 8px 0 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
+    }
+
+    /* ── Paper surface ── */
+    .paper-surface {
+      background: #f8f6e8;
+      border-radius: 6px;
+      position: relative;
+      padding: 4px 16px 12px 50px;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.22), 0 1px 4px rgba(0,0,0,0.1);
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 43px,
+        rgba(155,170,210,0.18) 43px,
+        rgba(155,170,210,0.18) 44px
+      );
+    }
+    .paper-surface::before {
+      content: '';
+      position: absolute;
+      left: 38px; top: 0; bottom: 0;
+      width: 1.5px;
+      background: rgba(196,75,65,0.18);
+      pointer-events: none;
+    }
+    .paper-mini-stats {
+      text-align: right;
+      font-size: 0.7rem;
+      color: rgba(160,145,110,0.5);
+      padding: 4px 2px 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Paper items ── */
+    .paper-item {
+      position: relative;
+      min-height: 44px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .paper-item.done .paper-input {
+      text-decoration: line-through;
+      color: rgba(80,70,50,0.38);
+    }
+    .paper-row {
+      display: flex; align-items: center; gap: 6px; min-height: 44px;
+    }
+    .paper-num {
+      position: absolute; left: -36px; width: 28px;
+      text-align: right; color: rgba(150,128,95,0.4);
+      font-size: 0.72rem; font-variant-numeric: tabular-nums;
+      user-select: none; pointer-events: none; top: 14px;
+    }
+    .paper-check {
+      width: 13px; height: 13px; flex-shrink: 0; cursor: pointer;
+      accent-color: rgba(100,88,65,0.8); opacity: 0.3; transition: opacity .15s;
+    }
+    .paper-check:hover, .paper-check:checked { opacity: 0.7; }
+    .paper-input {
+      flex: 1; background: transparent; border: none;
+      border-bottom: 1.5px solid transparent;
+      color: #26231a; font-size: 0.96rem; line-height: 1;
+      padding: 0 4px; height: 44px; outline: none;
+      transition: border-bottom-color .15s;
+    }
+    .paper-input::placeholder { color: rgba(120,105,78,0.22); font-style: italic; font-size: 0.88rem; }
+    .paper-input:focus { border-bottom-color: rgba(100,82,52,0.18); }
+    .paper-row-controls {
+      display: flex; gap: 1px; opacity: 0;
+      transition: opacity .15s; flex-shrink: 0;
+    }
+    .paper-item:hover .paper-row-controls,
+    .paper-item:focus-within .paper-row-controls,
+    .paper-item.is-open .paper-row-controls { opacity: 1; }
+    .btn-paper {
+      background: transparent; border: none;
+      color: rgba(110,92,62,0.45); cursor: pointer;
+      padding: 4px 7px; border-radius: 4px; font-size: 0.72rem;
+      transition: color .12s, background .12s;
+    }
+    .btn-paper:hover { color: rgba(80,65,38,0.85); background: rgba(0,0,0,0.06); }
+    .paper-project-hint {
+      font-size: 0.7rem; color: rgba(120,100,65,0.4);
+      padding: 0 4px 3px 21px; line-height: 1;
+    }
+
+    /* ── Paper detail area ── */
+    .paper-detail-area {
+      margin: 0 0 6px 20px;
+      padding: 10px 10px 10px 12px;
+      border-left: 2px solid rgba(180,162,122,0.28);
+      background: rgba(0,0,0,0.022);
+      border-radius: 0 6px 6px 0;
+    }
+    .paper-detail-area .select,
+    .paper-detail-area .textarea {
+      background: rgba(255,255,255,0.72);
+      border-color: rgba(180,162,122,0.3);
+      color: #26231a;
+      font-size: 0.88rem;
+    }
+    .paper-detail-area .md-preview {
+      background: rgba(255,255,255,0.5);
+      border-color: rgba(180,162,122,0.22);
+      color: #4a4030; font-size: 0.88rem;
+    }
+    .paper-detail-area .btn {
+      background: rgba(255,255,255,0.65);
+      border-color: rgba(180,162,122,0.38);
+      color: #4a4030; min-height: 30px; padding: 4px 10px; font-size: 0.85rem;
+    }
+    .paper-detail-area .btn:hover { border-color: rgba(140,120,80,0.6); }
+    .paper-detail-area .smallmeta { color: #7a6a50; }
+    .paper-detail-area .inline-grid { margin-bottom: 8px; }
+
+    /* ── Focus history section ── */
+    .focus-history-section {
+      margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border);
+    }
+    .focus-history-toggle {
+      background: transparent; border: none; color: var(--ink-dim);
+      cursor: pointer; font-size: 0.78rem; padding: 0;
+      display: flex; align-items: center; gap: 5px; letter-spacing: .03em;
+    }
+    .focus-history-toggle:hover { color: var(--ink-mid); }
+    .focus-history-content { margin-top: 12px; }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .projects-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 700px) {
+      .inline-grid { grid-template-columns: 1fr; }
+      .app { width: min(var(--max), calc(100vw - 16px)); }
+      .bucket-row { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; }
+      .bucket-controls { grid-column: 1; margin-left: 0; padding-left: 0; }
+      .bucket-details { margin-left: 0; }
+      .resource-link-row { grid-template-columns: 1fr; }
+      .paper-surface { padding-left: 42px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="titlebox">
+      <h1>Bucket of Ten</h1>
+      <p class="subtitle">Dringendes füllt selten alle zehn Plätze. Der Rest ist dein Wachstumsraum. Kontext ist Material — Fokus ist Verbindlichkeit.</p>
+    </div>
+    <div class="toolbarbox">
+      <div class="toolbar">
+        <button class="btn primary" onclick="startNewWeek()">Neue Woche</button>
+        <button class="btn blue" onclick="fillDemoData()">Demo-Daten</button>
+        <button class="btn" onclick="exportData()">Export</button>
+        <label class="btn ghost" for="importFile">Import</label>
+        <input id="importFile" class="hidden" type="file" accept="application/json" onchange="importData(event)">
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="focus" onclick="switchTab('focus')">Fokus</button>
+    <button class="tab" data-tab="context" onclick="switchTab('context')">Projekte</button>
+    <button class="tab" data-tab="review" onclick="switchTab('review')">Reset / Review</button>
+    <button class="tab" data-tab="studio" onclick="switchTab('studio')">Prompt Studio</button>
+  </div>
+
+  <div class="layout">
+    <div class="stack">
+
+      <!-- FOKUS -->
+      <section class="panel" id="panel-focus">
+        <div class="focus-topbar">
+          <span class="focus-week-label" id="currentWeekLabel">Noch keine Woche angelegt.</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="focus-meta-inline" id="focusMeta"></span>
+            <button class="btn-options" onclick="toggleFocusOptions()">⋯</button>
+          </div>
+        </div>
+        <div id="focusOptionsPanel" class="focus-options-panel hidden">
+          <button class="btn small primary" onclick="startNewWeek()">Neue Woche</button>
+          <button class="btn small" onclick="clearCurrentBucket()">Liste leeren</button>
+          <button class="btn small blue" onclick="switchTab('review')">Review</button>
+        </div>
+        <div class="paper-surface">
+          <div id="bucketList"></div>
+          <div class="paper-mini-stats" id="focusMiniStats"></div>
+        </div>
+        <div class="focus-history-section">
+          <button class="focus-history-toggle" onclick="toggleFocusHistory()">
+            <span id="focusHistoryArrow">▸</span>&nbsp;Wochenverlauf
+          </button>
+          <div id="focusHistoryContent" class="focus-history-content hidden">
+            <div class="card-list" id="historyListFocus"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROJEKTE TAB -->
+      <section class="panel hidden" id="panel-context">
+        <div class="section-head" style="margin-bottom:16px;">
+          <div>
+            <h2>Projekte</h2>
+            <p class="meta">Projekte speichern Kontext. Die Bucket entscheidet Fokus. Kein zweites Todo-System — Projekte halten Anknüpfungspunkte, Material und offene Fäden.</p>
+          </div>
+        </div>
+
+        <div class="projects-layout">
+          <!-- Sidebar -->
+          <div class="projects-sidebar">
+            <div class="proj-list-header">
+              <span>Projekte</span>
+              <button class="btn small primary" onclick="showNewProjectForm()">+ Neu</button>
+            </div>
+            <div id="projectList"></div>
+          </div>
+
+          <!-- Detail -->
+          <div id="projectDetail">
+            <div class="proj-detail-placeholder">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
+              <span>Projekt auswählen oder neu anlegen</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resources section (collapsible) -->
+        <div class="resources-section">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 0;border-top:1px solid var(--border);">
+            <button class="resources-toggle-btn" onclick="toggleResourcesSection()">
+              <svg id="resToggleIcon" width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z"/></svg>
+              Ressourcen
+            </button>
+            <button class="btn small" onclick="toggleResourceForm()">+ Ressource</button>
+          </div>
+          <div id="resourcesWrap">
+            <div id="resourceFormWrap" class="hidden" style="margin:10px 0;">
+              <div class="card">
+                <div class="inline-grid">
+                  <input class="field" id="newResTitle" placeholder="Titel / Label">
+                  <input class="field" id="newResUrl" placeholder="URL, Obsidian-Link oder Dokumentpfad">
+                </div>
+                <div class="inline-grid" style="margin-top:10px;">
+                  <select class="select" id="newResType">
+                    <option value="gpt">GPT / Chat</option>
+                    <option value="obsidian">Obsidian</option>
+                    <option value="doc">Doc / Datei</option>
+                    <option value="reader">Readwise Reader</option>
+                    <option value="zotero">Zotero</option>
+                    <option value="raindrop">Raindrop</option>
+                    <option value="other">Sonstiges</option>
+                  </select>
+                  <input class="field" id="newResProject" placeholder="Projektbezug (optional)">
+                </div>
+                <textarea class="textarea" id="newResReason" style="margin-top:10px;" placeholder="Warum ist diese Ressource gerade wichtig?"></textarea>
+                <div class="row-actions" style="margin-top:10px;">
+                  <button class="btn primary small" onclick="addResource()">Ressource speichern</button>
+                  <button class="btn small ghost" onclick="toggleResourceForm()">Abbrechen</button>
+                </div>
+              </div>
+            </div>
+            <div class="card-list" id="resourceList" style="margin-top:8px;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- REVIEW -->
+      <section class="panel hidden" id="panel-review">
+        <div class="section-head">
+          <div>
+            <h2>Reset / Review</h2>
+            <p class="meta">Rohmaterial → Analyse → Kandidaten → bewusste Auswahl → Bucket. Diese Woche soll nicht nur voller, sondern klärer werden.</p>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="card">
+            <h3>Rohmaterial</h3>
+            <p class="smallmeta" style="margin-bottom:8px;">Alles rein: Weekly Review, Braindump, Journaling, Sprachnotizen. Noch keine Priorisierung.</p>
+            <textarea class="textarea" id="reviewRaw" placeholder="Weekly Review, Bullet Journal, Braindump, Sprachreflexion — alles rein, noch ungefiltert..."></textarea>
+            <div class="row-actions" style="margin-top:10px;">
+              <button class="btn primary" onclick="buildReviewPrompt()">Analyse-Prompt erzeugen</button>
+              <button class="btn" onclick="buildDeepPrompt()">Deep-Review-Prompt erzeugen</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Leitfragen</h3>
+            <div class="card-list" id="questionList"></div>
+          </div>
+          <div class="card">
+            <h3>Eigene Verdichtung</h3>
+            <p class="smallmeta" style="margin-bottom:8px;">Nicht der KI überlassen: Was zieht wirklich? Was ist nur Beschäftigung? Was kehrt immer wieder zurück?</p>
+            <textarea class="textarea" id="reviewNotes" placeholder="Was zieht wirklich? Was ist Busywork? Was droht wieder unterzugehen — wichtig, aber nicht dringend?"></textarea>
+            <div class="row-actions" style="margin-top:10px;">
+              <button class="btn" onclick="addCandidateFromReview()">Als Kandidat vormerken</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Kandidaten</h3>
+            <p class="smallmeta" style="margin-bottom:8px;">Vorschläge, keine Verpflichtungen. Erst wenn du sie bewusst übernimmst, werden sie zur Bucket.</p>
+            <div class="card-list" id="candidateList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STUDIO -->
+      <section class="panel hidden" id="panel-studio">
+        <div class="section-head">
+          <div>
+            <h2>Prompt Studio</h2>
+            <p class="meta">KI ist Spiegel und Verdichter, nicht Entscheider. Prompt erzeugen → Antwort zurückbringen → Kandidaten filtern → Bucket selbst formulieren.</p>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="card">
+            <h3>Prompt-Ausgabe</h3>
+            <textarea class="codebox" id="promptOut" placeholder="Hier erscheinen generierte Prompts..."></textarea>
+            <div class="row-actions" style="margin-top:10px;">
+              <button class="btn primary" onclick="copyField('promptOut')">Prompt kopieren</button>
+              <button class="btn" onclick="buildCleanupPrompt()">Bereinigungs-Prompt erzeugen</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Strukturierte Antwort / JSON</h3>
+            <textarea class="codebox" id="jsonIn" placeholder="Hier JSON oder strukturierte GPT-Antwort einfügen..."></textarea>
+            <div class="row-actions" style="margin-top:10px;">
+              <button class="btn primary" onclick="importStructuredJson()">JSON importieren</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right column: history + notice -->
+    <div class="stack" id="rightStack">
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <h2>Wochenverlauf</h2>
+            <p class="meta">Vorherige Buckets als scrollbarer Verlauf.</p>
+          </div>
+        </div>
+        <div class="card-list" id="historyList"></div>
+      </section>
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <h2>V1-Fokus</h2>
+            <p class="meta">Diese erste Version ist absichtlich begrenzt.</p>
+          </div>
+        </div>
+        <div class="notice">Kontext darf ruhen. Fokus wird gewählt. Diese App soll eine Woche nicht nur verwalten, sondern bewusst formen.</div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+  var LKEY = 'bucket_of_ten_v1';
+  var S = {
+    projects: [],
+    resources: [],
+    candidateSteps: [],
+    bucketWeeks: [],
+    currentWeekId: '',
+    promptDrafts: { review: '', deep: '', cleanup: '' },
+    _lastSaved: ''
+  };
+
+  var selectedProjectId = null;
+  var resourcesCollapsed = false;
+  var focusOptionsOpen = false;
+  var focusHistoryOpen = false;
+
+  var DEFAULT_QUESTIONS = [
+    'Was fühlt sich gerade dringlich an, ist aber innerlich leer?',
+    'Welche Themen kehren immer wieder zurück?',
+    'Wo weichst du auf Beschäftigung aus statt auf Fokus?',
+    'Was wäre wichtig, auch ohne äußere Deadline?',
+    'Welche Aufgabe würde dich diese Woche wirklich wachsen lassen?',
+    'Welche Dinge gehören bewusst nicht in diese Woche?',
+    'Welche Projekte ziehen dich innerlich wirklich an?',
+    'Was ist Pflicht, was Pflege, was Wachstum, was kreativ?'
+  ];
+
+  function uid() {
+    return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  }
+
+  function today() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function val(id, next) {
+    var el = document.getElementById(id);
+    if (!el) return '';
+    if (arguments.length > 1) el.value = next;
+    return el.value || '';
+  }
+
+  function escHtml(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function escAttr(s) {
+    return escHtml(s).replace(/'/g, '&#39;');
+  }
+
+  // ── Migration ──────────────────────────────────────────
+  function normalizeProject(p) {
+    p = p || {};
+    p.id = p.id || uid();
+    p.title = p.title || '';
+    p.status = ['aktiv','pausiert','archiviert'].indexOf(p.status) >= 0 ? p.status : 'aktiv';
+    // summary: prefer existing summary, fall back to legacy notes
+    p.summary = p.summary || p.notes || '';
+    p.currentFocus = p.currentFocus || '';
+    p.nextStep = p.nextStep || '';
+    p.mainChatUrl = p.mainChatUrl || '';
+    p.driveUrl = p.driveUrl || '';
+    // obsidianUrl: auto-fill only if legacy link is clearly obsidian://
+    if (!p.obsidianUrl) {
+      p.obsidianUrl = (p.link && /^obsidian:\/\//.test(String(p.link))) ? p.link : '';
+    }
+    p.lastAnalysis = p.lastAnalysis || '';
+    p.createdAt = p.createdAt || new Date().toISOString();
+    p.updatedAt = p.updatedAt || p.createdAt;
+    // keep legacy fields intact for backward compat
+    p.link = p.link || '';
+    p.notes = p.notes || '';
+    return p;
+  }
+
+  // ── Persistence ────────────────────────────────────────
+  function save() {
+    S._lastSaved = new Date().toISOString();
+    localStorage.setItem(LKEY, JSON.stringify(S));
+    renderAll();
+  }
+
+  function saveSilent() {
+    S._lastSaved = new Date().toISOString();
+    localStorage.setItem(LKEY, JSON.stringify(S));
+  }
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(LKEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') S = parsed;
+      }
+    } catch (e) { console.error(e); }
+    ensureDefaults();
+    // apply focus-mode class on initial load (default tab is focus)
+    var layout = document.querySelector('.layout');
+    if (layout) layout.classList.add('focus-mode');
+    if (!S.currentWeekId) startNewWeek(true);
+    else renderAll();
+  }
+
+  function ensureDefaults() {
+    if (!Array.isArray(S.projects)) S.projects = [];
+    if (!Array.isArray(S.resources)) S.resources = [];
+    if (!Array.isArray(S.candidateSteps)) S.candidateSteps = [];
+    if (!Array.isArray(S.bucketWeeks)) S.bucketWeeks = [];
+    if (!S.promptDrafts || typeof S.promptDrafts !== 'object') S.promptDrafts = { review: '', deep: '', cleanup: '' };
+    if (!S.currentWeekId) S.currentWeekId = '';
+    // Migrate all projects
+    S.projects = S.projects.map(normalizeProject);
+    S.bucketWeeks.forEach(function(week){
+      if (!Array.isArray(week.items)) week.items = defaultBucketItems();
+      week.items = week.items.map(function(item, idx){ return normalizeBucketItem(item, idx + 1); });
+    });
+  }
+
+  // ── Bucket Items ───────────────────────────────────────
+  function defaultBucketItems() {
+    var arr = [];
+    for (var i = 1; i <= 10; i++) {
+      arr.push(normalizeBucketItem({ id: uid(), index: i }, i));
+    }
+    return arr;
+  }
+
+  function normalizeBucketItem(item, fallbackIndex) {
+    item = item || {};
+    item.id = item.id || uid();
+    item.index = Number(item.index) || fallbackIndex || 1;
+    item.title = item.title || '';
+    item.projectId = item.projectId || '';
+    item.notes = item.notes || '';
+    item.type = ['pflicht','pflege','wachstum','kreativ'].indexOf(item.type) >= 0 ? item.type : 'pflicht';
+    item.done = !!item.done;
+    item.open = !!item.open;
+    item.details = item.details || '';
+    item.projectRef = item.projectRef || item.projectId || item.notes || '';
+    return item;
+  }
+
+  function getCurrentWeek() {
+    return S.bucketWeeks.find(function(w){ return w.id === S.currentWeekId; }) || null;
+  }
+
+  function weekLabel() {
+    var d = new Date();
+    return 'Woche ab ' + d.toLocaleDateString('de-DE');
+  }
+
+  function startNewWeek(silent) {
+    var current = getCurrentWeek();
+    if (!silent && current && current.items.some(function(i){ return (i.title || '').trim(); })) {
+      if (!confirm('Neue Woche beginnen? Die aktuelle Bucket wird im Verlauf gespeichert und kann jederzeit wieder geöffnet werden.')) return;
+    }
+    var week = { id: uid(), createdAt: new Date().toISOString(), label: weekLabel(), items: defaultBucketItems() };
+    S.bucketWeeks.unshift(week);
+    S.currentWeekId = week.id;
+    save();
+  }
+
+  function clearCurrentBucket() {
+    var week = getCurrentWeek();
+    if (!week) return;
+    if (!confirm('Alle zehn Zeilen leeren? Diese Woche beginnt dann neu.')) return;
+    week.items = defaultBucketItems();
+    save();
+  }
+
+  // ── Tab / UI ───────────────────────────────────────────
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(function(el){
+      el.classList.toggle('active', el.getAttribute('data-tab') === tab);
+    });
+    ['focus','context','review','studio'].forEach(function(t){
+      document.getElementById('panel-' + t).classList.toggle('hidden', tab !== t);
+    });
+    var layout = document.querySelector('.layout');
+    if (layout) layout.classList.toggle('focus-mode', tab === 'focus');
+  }
+
+  function toggleFocusOptions() {
+    focusOptionsOpen = !focusOptionsOpen;
+    var p = document.getElementById('focusOptionsPanel');
+    if (p) p.classList.toggle('hidden', !focusOptionsOpen);
+  }
+
+  function toggleFocusHistory() {
+    focusHistoryOpen = !focusHistoryOpen;
+    var content = document.getElementById('focusHistoryContent');
+    var arrow = document.getElementById('focusHistoryArrow');
+    if (content) content.classList.toggle('hidden', !focusHistoryOpen);
+    if (arrow) arrow.textContent = focusHistoryOpen ? '▾' : '▸';
+    if (focusHistoryOpen) renderFocusHistory();
+  }
+
+  function renderFocusHistory() {
+    var box = document.getElementById('historyListFocus');
+    if (!box) return;
+    if (!S.bucketWeeks.length) {
+      box.innerHTML = '<div class="smallmeta">Noch kein Verlauf.</div>'; return;
+    }
+    box.innerHTML = S.bucketWeeks.map(function(week){
+      var filled = week.items.filter(function(i){ return (i.title||'').trim(); }).length;
+      var done = week.items.filter(function(i){ return i.done; }).length;
+      var preview = week.items.filter(function(i){ return (i.title||'').trim(); }).slice(0,3)
+        .map(function(i){ return '<li>' + escHtml(i.title) + '</li>'; }).join('');
+      return '<div class="card">' +
+        '<div class="section-head" style="margin-bottom:6px;">' +
+          '<div><h3 style="font-size:0.9rem;margin:0 0 2px;">' + escHtml(week.label) + '</h3>' +
+          '<div class="smallmeta">' + filled + ' gefüllt · ' + done + ' erledigt</div></div>' +
+          '<button class="btn small" onclick="openWeek(\'' + week.id + '\')">öffnen</button>' +
+        '</div>' +
+        (preview ? '<ul style="margin:0;padding-left:18px;font-size:0.85rem;">' + preview + '</ul>' : '<div class="smallmeta">Noch leer.</div>') +
+      '</div>';
+    }).join('');
+  }
+
+  function toggleResourcesSection() {
+    resourcesCollapsed = !resourcesCollapsed;
+    var wrap = document.getElementById('resourcesWrap');
+    var icon = document.getElementById('resToggleIcon');
+    if (resourcesCollapsed) {
+      wrap.style.display = 'none';
+      icon.innerHTML = '<path d="M6 4l5 5-5 5V4z"/>';
+    } else {
+      wrap.style.display = '';
+      icon.innerHTML = '<path d="M6 8L1 3h10z"/>';
+    }
+  }
+
+  function toggleResourceForm() {
+    var wrap = document.getElementById('resourceFormWrap');
+    wrap.classList.toggle('hidden');
+  }
+
+  // ── Render All ────────────────────────────────────────
+  function renderAll() {
+    renderCurrentWeek();
+    renderHistory();
+    renderProjectsList();
+    renderProjectDetail(selectedProjectId);
+    renderResources();
+    renderQuestions();
+    renderCandidates();
+    if (focusHistoryOpen) renderFocusHistory();
+    var promptEl = document.getElementById('promptOut');
+    if (promptEl) promptEl.value = S.promptDrafts.review || S.promptDrafts.deep || S.promptDrafts.cleanup || '';
+  }
+
+  // ── Bucket Render ─────────────────────────────────────
+  function renderCurrentWeek() {
+    var week = getCurrentWeek();
+    var list = document.getElementById('bucketList');
+    var label = document.getElementById('currentWeekLabel');
+    if (!week) {
+      label.textContent = 'Noch keine Woche angelegt.';
+      list.innerHTML = '<div style="padding:24px 0;color:rgba(120,100,70,0.35);font-style:italic;font-size:0.9rem;">Keine aktive Woche.</div>';
+      return;
+    }
+    week.items = week.items.map(function(item, idx){ return normalizeBucketItem(item, idx + 1); });
+    label.textContent = week.label;
+
+    list.innerHTML = week.items.map(function(item){
+      var project = getProjectById(item.projectId);
+      var projectHintText = '';
+      if (item.projectId && project) {
+        projectHintText = project.title;
+      } else if (!item.projectId && item.projectRef) {
+        projectHintText = item.projectRef;
+      }
+
+      var detailsBlock = '';
+      if (item.open) {
+        var projectLink = '';
+        if (project) {
+          var href = project.mainChatUrl || project.obsidianUrl || project.driveUrl || project.link || '';
+          projectLink = href
+            ? '<a target="_blank" rel="noopener noreferrer" href="' + escAttr(href) + '">' + escHtml(project.title) + '</a>'
+            : escHtml(project.title);
+        } else if (item.projectRef) {
+          projectLink = escHtml(item.projectRef);
+        }
+        detailsBlock =
+          '<div class="paper-detail-area">' +
+            '<div class="inline-grid">' +
+              '<select class="select" onchange="updateBucketType(\'' + item.id + '\', this.value)">' + selectOptions(item.type) + '</select>' +
+              '<select class="select" onchange="updateBucketProjectId(\'' + item.id + '\', this.value)">' + projectOptions(item.projectId) + '</select>' +
+            '</div>' +
+            (projectLink ? '<div class="smallmeta" style="margin-bottom:6px;">Projekt: ' + projectLink + '</div>' : '') +
+            '<textarea class="textarea" style="min-height:88px;" placeholder="Kontext, Unter-Schritte, Why now… (Markdown)" oninput="updateBucketDetails(\'' + item.id + '\', this.value)">' + escHtml(item.details) + '</textarea>' +
+            (item.details ? '<div class="md-preview" style="margin-top:6px;">' + renderMarkdown(item.details) + '</div>' : '') +
+            '<div class="row-actions" style="margin-top:8px;">' +
+              '<button class="btn small" onclick="fillBucketFromFirstCandidate(\'' + item.id + '\')">Kandidat übernehmen</button>' +
+            '</div>' +
+          '</div>';
+      }
+
+      return '<div class="paper-item' + (item.done ? ' done' : '') + (item.open ? ' is-open' : '') + '">' +
+        '<span class="paper-num">' + item.index + '</span>' +
+        '<div class="paper-row">' +
+          '<input type="checkbox" class="paper-check"' + (item.done ? ' checked' : '') + ' onchange="toggleBucketDone(\'' + item.id + '\', this.checked)">' +
+          '<input class="paper-input"' +
+            ' value="' + escAttr(item.title) + '"' +
+            ' placeholder=""' +
+            ' data-bucket-index="' + item.index + '"' +
+            ' oninput="updateBucketTitle(\'' + item.id + '\', this.value)"' +
+            ' onkeydown="handleBucketTitleKeydown(event, \'' + item.id + '\')"' +
+            ' onpaste="handleBucketTitlePaste(event, \'' + item.id + '\')">' +
+          '<div class="paper-row-controls">' +
+            '<button class="btn-paper" onclick="toggleBucketOpen(\'' + item.id + '\')" title="Details (Strg+Enter)">' + (item.open ? '▲' : '▼') + '</button>' +
+          '</div>' +
+        '</div>' +
+        (projectHintText && !item.open ? '<div class="paper-project-hint">' + escHtml(projectHintText) + '</div>' : '') +
+        detailsBlock +
+      '</div>';
+    }).join('');
+
+    renderStats(week);
+  }
+
+  function renderStats(week) {
+    var done = week.items.filter(function(i){ return i.done; }).length;
+    var filled = week.items.filter(function(i){ return (i.title||'').trim(); }).length;
+    var meta = document.getElementById('focusMeta');
+    if (meta) meta.textContent = done + '\u202f/\u202f' + filled + ' erledigt';
+    var mini = document.getElementById('focusMiniStats');
+    if (mini) mini.textContent = done + '\u202f/\u202f10';
+  }
+
+  function selectOptions(current) {
+    var opts = [['pflicht','Pflicht'],['pflege','Pflege'],['wachstum','Wachstum'],['kreativ','Kreativ']];
+    return opts.map(function(opt){
+      return '<option value="' + opt[0] + '" ' + (current === opt[0] ? 'selected' : '') + '>' + opt[1] + '</option>';
+    }).join('');
+  }
+
+  function getProjectById(projectId) {
+    if (!projectId) return null;
+    return S.projects.find(function(p){ return p.id === projectId; }) || null;
+  }
+
+  function projectOptions(selectedProjectId) {
+    var base = '<option value="">(kein Projekt)</option>';
+    var dynamic = S.projects.map(function(p){
+      return '<option value="' + escAttr(p.id) + '" ' + (selectedProjectId === p.id ? 'selected' : '') + '>' + escHtml(p.title || '(ohne Titel)') + '</option>';
+    }).join('');
+    return base + dynamic;
+  }
+
+  function findBucketItem(id) {
+    var week = getCurrentWeek();
+    if (!week) return null;
+    return week.items.find(function(i){ return i.id === id; }) || null;
+  }
+
+  function updateBucketTitle(id, value) {
+    var item = findBucketItem(id); if (!item) return;
+    item.title = value; saveSilent();
+    var week = getCurrentWeek(); if (week) renderStats(week);
+  }
+  function updateBucketType(id, value) {
+    var item = findBucketItem(id); if (!item) return;
+    item.type = value; save();
+  }
+  function toggleBucketDone(id, checked) {
+    var item = findBucketItem(id); if (!item) return;
+    item.done = checked; save();
+  }
+  function toggleBucketOpen(id) {
+    var item = findBucketItem(id); if (!item) return;
+    item.open = !item.open; save();
+  }
+  function updateBucketDetails(id, value) {
+    var item = findBucketItem(id); if (!item) return;
+    item.details = value; saveSilent();
+  }
+  function updateBucketProjectId(bucketId, projectId) {
+    var item = findBucketItem(bucketId); if (!item) return;
+    item.projectId = projectId || '';
+    var project = getProjectById(item.projectId);
+    if (project) { item.projectRef = project.title; item.notes = project.title; }
+    else { item.projectRef = ''; item.notes = ''; }
+    saveSilent(); renderCurrentWeek();
+  }
+  function fillBucketFromFirstCandidate(bucketId) {
+    var item = findBucketItem(bucketId);
+    var cand = S.candidateSteps[0];
+    if (!item || !cand) { alert('Keine Kandidaten vorhanden.'); return; }
+    var project = findProjectByTitle(cand.projectRef || '');
+    item.title = cand.title || '';
+    item.projectId = project ? project.id : '';
+    item.projectRef = project ? project.title : (cand.projectRef || '');
+    item.notes = item.projectRef;
+    item.details = cand.whyNow ? ('## Warum jetzt?\n' + cand.whyNow) : (item.details || '');
+    item.open = true;
+    if (['pflicht','pflege','wachstum','kreativ'].indexOf(cand.type) >= 0) item.type = cand.type;
+    save();
+  }
+
+  // ── History Render ────────────────────────────────────
+  function renderHistory() {
+    var box = document.getElementById('historyList');
+    if (!S.bucketWeeks.length) {
+      box.innerHTML = '<div class="notice">Noch kein Verlauf vorhanden.</div>'; return;
+    }
+    box.innerHTML = S.bucketWeeks.map(function(week){
+      var filled = week.items.filter(function(i){ return (i.title || '').trim(); }).length;
+      var done = week.items.filter(function(i){ return i.done; }).length;
+      var preview = week.items.filter(function(i){ return (i.title || '').trim(); }).slice(0, 3)
+        .map(function(i){ return '<li>' + escHtml(i.title) + '</li>'; }).join('');
+      return '<div class="card">' +
+        '<div class="section-head" style="margin-bottom:8px;">' +
+          '<div><h3>' + escHtml(week.label) + '</h3><div class="smallmeta">' + filled + ' gefüllt · ' + done + ' erledigt</div></div>' +
+          '<button class="btn small" onclick="openWeek(\'' + week.id + '\')">öffnen</button>' +
+        '</div>' +
+        (preview ? '<ul style="margin:0;padding-left:18px;">' + preview + '</ul>' : '<div class="smallmeta">Noch leer.</div>') +
+      '</div>';
+    }).join('');
+  }
+
+  function openWeek(id) {
+    S.currentWeekId = id; save(); switchTab('focus');
+  }
+
+  // ── Keyboard + Paste ──────────────────────────────────
+  function focusBucketInput(index) {
+    var inp = document.querySelector('[data-bucket-index="' + index + '"]');
+    if (inp) { inp.focus(); try { var l = inp.value.length; inp.setSelectionRange(l,l); } catch(e){} }
+  }
+
+  function handleBucketTitleKeydown(event, id) {
+    var item = findBucketItem(id); if (!item) return;
+    var idx = item.index;
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault(); toggleBucketOpen(id); return;
+    }
+    if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault(); if (idx < 10) focusBucketInput(idx + 1); return;
+    }
+    if (event.key === 'Enter' && event.altKey) {
+      event.preventDefault(); if (idx > 1) focusBucketInput(idx - 1); return;
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      if (item.open) { item.open = false; save(); } else { event.target.blur(); }
+      return;
+    }
+  }
+
+  function cleanPastedBucketLine(line) {
+    return line.replace(/^[-*]\s+/, '').replace(/^\d+[.)]\s+/, '').trim();
+  }
+
+  function pasteLinesIntoBucket(startIndex, lines) {
+    var week = getCurrentWeek(); if (!week) return;
+    var lastFilled = startIndex;
+    for (var i = 0; i < lines.length; i++) {
+      var ti = startIndex + i; if (ti > 10) break;
+      var item = week.items.find(function(it){ return it.index === ti; });
+      if (item) { item.title = lines[i]; lastFilled = ti; }
+    }
+    saveSilent(); renderCurrentWeek();
+    setTimeout(function(){ focusBucketInput(lastFilled); }, 30);
+  }
+
+  function handleBucketTitlePaste(event, id) {
+    var text = (event.clipboardData || window.clipboardData).getData('text');
+    if (!text) return;
+    var lines = text.split('\n').map(cleanPastedBucketLine).filter(function(l){ return l.length > 0; });
+    if (lines.length <= 1) return;
+    event.preventDefault();
+    var item = findBucketItem(id); if (!item) return;
+    pasteLinesIntoBucket(item.index, lines);
+  }
+
+  // ── Focus history ──────────────────────────────────────
+  function renderFocusHistory() {
+    var box = document.getElementById('historyListFocus'); if (!box) return;
+    if (!S.bucketWeeks.length) { box.innerHTML = '<div class="smallmeta">Noch kein Verlauf.</div>'; return; }
+    box.innerHTML = S.bucketWeeks.map(function(week){
+      var filled = week.items.filter(function(i){ return (i.title||'').trim(); }).length;
+      var done = week.items.filter(function(i){ return i.done; }).length;
+      var preview = week.items.filter(function(i){ return (i.title||'').trim(); }).slice(0,3)
+        .map(function(i){ return '<li>' + escHtml(i.title) + '</li>'; }).join('');
+      return '<div class="card">' +
+        '<div class="section-head" style="margin-bottom:6px;">' +
+          '<div><h3 style="font-size:0.9rem;margin:0 0 2px;">' + escHtml(week.label) + '</h3>' +
+          '<div class="smallmeta">' + filled + ' gefüllt · ' + done + ' erledigt</div></div>' +
+          '<button class="btn small" onclick="openWeek(\'' + week.id + '\')">öffnen</button>' +
+        '</div>' +
+        (preview ? '<ul style="margin:0;padding-left:18px;font-size:0.85rem;">' + preview + '</ul>' : '<div class="smallmeta">Noch leer.</div>') +
+      '</div>';
+    }).join('');
+  }
+
+  function toggleFocusHistory() {
+    focusHistoryOpen = !focusHistoryOpen;
+    var c = document.getElementById('focusHistoryContent');
+    var a = document.getElementById('focusHistoryArrow');
+    if (c) c.classList.toggle('hidden', !focusHistoryOpen);
+    if (a) a.textContent = focusHistoryOpen ? '▾' : '▸';
+    if (focusHistoryOpen) renderFocusHistory();
+  }
+
+  function toggleFocusOptions() {
+    focusOptionsOpen = !focusOptionsOpen;
+    var p = document.getElementById('focusOptionsPanel');
+    if (p) p.classList.toggle('hidden', !focusOptionsOpen);
+  }
+  function bucketCountForProject(projectId) {
+    var week = getCurrentWeek();
+    if (!week || !projectId) return 0;
+    return week.items.filter(function(i){ return i.projectId === projectId && (i.title || '').trim(); }).length;
+  }
+
+  function renderProjectsList() {
+    var box = document.getElementById('projectList');
+    if (!box) return;
+    var aktiv = S.projects.filter(function(p){ return p.status === 'aktiv'; });
+    var pausiert = S.projects.filter(function(p){ return p.status === 'pausiert'; });
+    var archiviert = S.projects.filter(function(p){ return p.status === 'archiviert'; });
+
+    function renderItem(p) {
+      var count = bucketCountForProject(p.id);
+      var isSelected = selectedProjectId === p.id;
+      var focusSnippet = p.currentFocus ? p.currentFocus.slice(0, 60) + (p.currentFocus.length > 60 ? '…' : '') : '';
+      var summarySnippet = p.summary ? p.summary.slice(0, 70) + (p.summary.length > 70 ? '…' : '') : '';
+      return '<div class="proj-list-item status-' + escAttr(p.status) + (isSelected ? ' selected' : '') + '" onclick="selectProject(\'' + p.id + '\')">' +
+        '<div class="proj-item-title">' + escHtml(p.title || '(ohne Titel)') + '</div>' +
+        '<div class="proj-item-meta">' +
+          '<span class="pill ' + escAttr(p.status) + '">' + escHtml(p.status) + '</span>' +
+          (count > 0 ? ' <span class="pill" style="margin-left:4px;">' + count + ' in Bucket</span>' : '') +
+        '</div>' +
+        (summarySnippet ? '<div class="proj-item-focus" style="margin-top:4px;">' + escHtml(summarySnippet) + '</div>' : '') +
+        (focusSnippet ? '<div class="proj-item-focus">' + escHtml(focusSnippet) + '</div>' : '') +
+      '</div>';
+    }
+
+    var html = '';
+    if (!S.projects.length) {
+      html = '<div class="smallmeta" style="padding:10px 0;">Noch keine Projekte.</div>';
+    } else {
+      html += aktiv.map(renderItem).join('');
+      if (pausiert.length) {
+        html += '<div class="proj-list-sep">Pausiert</div>';
+        html += pausiert.map(renderItem).join('');
+      }
+      if (archiviert.length) {
+        html += '<div class="proj-list-sep">Archiviert</div>';
+        html += archiviert.map(renderItem).join('');
+      }
+    }
+    box.innerHTML = html;
+  }
+
+  function selectProject(id) {
+    selectedProjectId = id;
+    renderProjectsList();
+    renderProjectDetail(id);
+  }
+
+  function showNewProjectForm() {
+    selectedProjectId = '__new__';
+    renderProjectsList();
+    renderProjectDetail('__new__');
+  }
+
+  function renderProjectDetail(id) {
+    var box = document.getElementById('projectDetail');
+    if (!box) return;
+
+    if (!id) {
+      box.innerHTML = '<div class="proj-detail-placeholder"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg><span>Projekt auswählen oder neu anlegen</span></div>';
+      return;
+    }
+
+    if (id === '__new__') {
+      box.innerHTML = renderNewProjectForm();
+      return;
+    }
+
+    var p = getProjectById(id);
+    if (!p) {
+      box.innerHTML = '<div class="proj-detail-placeholder"><span>Projekt nicht gefunden.</span></div>';
+      return;
+    }
+
+    var statusOptions = ['aktiv','pausiert','archiviert'].map(function(s){
+      return '<option value="' + s + '" ' + (p.status === s ? 'selected' : '') + '>' + s + '</option>';
+    }).join('');
+
+    box.innerHTML = '<div class="proj-detail">' +
+      // Title + status row
+      '<div class="proj-detail-header">' +
+        '<div style="flex:1;">' +
+          '<div class="field-label">Projekttitel</div>' +
+          '<input class="field" id="pd_title" value="' + escAttr(p.title) + '" placeholder="Projektname" oninput="updateProjectField(\'' + p.id + '\', \'title\', this.value)">' +
+        '</div>' +
+        '<div style="min-width:120px;">' +
+          '<div class="field-label">Status</div>' +
+          '<select class="select" onchange="updateProjectField(\'' + p.id + '\', \'status\', this.value)">' + statusOptions + '</select>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:6px;padding-top:22px;">' +
+          '<button class="btn small ghost red" onclick="deleteProject(\'' + p.id + '\')">Löschen</button>' +
+        '</div>' +
+      '</div>' +
+
+      // Summary
+      '<div class="proj-section">' +
+        '<div class="proj-section-title">Zusammenfassung</div>' +
+        '<textarea class="textarea" style="min-height:80px;" id="pd_summary" placeholder="Worum geht es? Kontext, Relevanz, Hintergrund..." oninput="updateProjectField(\'' + p.id + '\', \'summary\', this.value)">' + escHtml(p.summary) + '</textarea>' +
+      '</div>' +
+
+      // Current Focus
+      '<div class="proj-section">' +
+        '<div class="proj-section-title">Aktueller Fokus</div>' +
+        '<textarea class="textarea" style="min-height:64px;" id="pd_currentFocus" placeholder="Was ist gerade das zentrale Thema oder die zentrale Frage dieses Projekts?" oninput="updateProjectField(\'' + p.id + '\', \'currentFocus\', this.value)">' + escHtml(p.currentFocus) + '</textarea>' +
+      '</div>' +
+
+      // Next Step (compass)
+      '<div class="proj-section">' +
+        '<div class="proj-section-title">Richtungshinweis</div>' +
+        '<div class="nextstep-wrap">' +
+          '<div class="nextstep-label">↗ Kompass / Nächste Richtung — kein Todo, kein Termin</div>' +
+          '<textarea id="pd_nextStep" placeholder="Wohin zeigt der Kompass gerade? Welcher nächste Schritt würde das Projekt voranbringen, wenn du morgen Zeit hättest?" oninput="updateProjectField(\'' + p.id + '\', \'nextStep\', this.value)">' + escHtml(p.nextStep) + '</textarea>' +
+          '<div class="nextstep-hint">Next Step ist ein Kompass, keine Aufgabe. Wenn dieser Hinweis verbindlich werden soll, erzeuge daraus einen Kandidaten und übernimm ihn bewusst in die Bucket.</div>' +
+        '</div>' +
+      '</div>' +
+
+      // Resource Links
+      '<div class="proj-section">' +
+        '<div class="proj-section-title">Ressourcen-Links</div>' +
+        '<div class="resource-links">' +
+          renderResourceLinkField(p.id, 'mainChatUrl', 'Chat / GPT', p.mainChatUrl, 'https://chatgpt.com/...') +
+          renderResourceLinkField(p.id, 'driveUrl', 'Drive / Doc', p.driveUrl, 'https://docs.google.com/...') +
+          renderResourceLinkField(p.id, 'obsidianUrl', 'Obsidian', p.obsidianUrl, 'obsidian://...') +
+        '</div>' +
+      '</div>' +
+
+      // Last Analysis
+      '<div class="proj-section">' +
+        '<div class="proj-section-title">Letzte Analyse / Notiz</div>' +
+        '<textarea class="textarea" style="min-height:80px;" id="pd_lastAnalysis" placeholder="Ergebnisse einer letzten Review, GPT-Analyse oder wichtige Erkenntnisse..." oninput="updateProjectField(\'' + p.id + '\', \'lastAnalysis\', this.value)">' + escHtml(p.lastAnalysis) + '</textarea>' +
+      '</div>' +
+
+      // Footer actions
+      '<div class="proj-section">' +
+        '<div class="row-actions">' +
+          '<button class="btn small" onclick="candidateFromProject(\'' + p.id + '\')">Kandidat aus Projekt erzeugen</button>' +
+          '<span class="smallmeta" style="margin-left:auto;">Aktualisiert: ' + escHtml(formatDate(p.updatedAt)) + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderResourceLinkField(projectId, field, label, value, placeholder) {
+    return '<div class="resource-link-row">' +
+      '<div class="resource-link-label">' + escHtml(label) + '</div>' +
+      '<input class="field" style="min-height:36px;padding:7px 10px;" value="' + escAttr(value) + '" placeholder="' + escAttr(placeholder) + '" oninput="updateProjectField(\'' + projectId + '\', \'' + field + '\', this.value)">' +
+    '</div>';
+  }
+
+  function renderNewProjectForm() {
+    return '<div class="proj-detail">' +
+      '<div style="margin-bottom:4px;"><h3 style="margin:0 0 4px;font-size:1rem;color:var(--accent);">Neues Projekt</h3>' +
+      '<p class="meta">Projekte sind Kontext — Richtung, Material, Orientierung.</p></div>' +
+      '<div class="field-group"><div class="field-label">Projekttitel</div>' +
+        '<input class="field" id="newProjectTitle" placeholder="Projektname"></div>' +
+      '<div class="field-group"><div class="field-label">Status</div>' +
+        '<select class="select" id="newProjectStatus"><option value="aktiv">aktiv</option><option value="pausiert">pausiert</option><option value="archiviert">archiviert</option></select></div>' +
+      '<div class="field-group"><div class="field-label">Zusammenfassung</div>' +
+        '<textarea class="textarea" style="min-height:72px;" id="newProjectSummary" placeholder="Worum geht es? Kontext, Relevanz..."></textarea></div>' +
+      '<div class="field-group"><div class="field-label">Aktueller Fokus (optional)</div>' +
+        '<textarea class="textarea" style="min-height:56px;" id="newProjectFocus" placeholder="Was ist gerade das zentrale Thema?"></textarea></div>' +
+      '<div class="row-actions">' +
+        '<button class="btn primary" onclick="addProject()">Projekt anlegen</button>' +
+        '<button class="btn ghost" onclick="cancelNewProject()">Abbrechen</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '–';
+    try { return new Date(iso).toLocaleDateString('de-DE'); } catch(e) { return iso; }
+  }
+
+  // ── Project CRUD ──────────────────────────────────────
+  function addProject() {
+    var title = val('newProjectTitle').trim();
+    if (!title) { alert('Bitte einen Projektnamen eingeben.'); return; }
+    var p = normalizeProject({
+      id: uid(),
+      title: title,
+      status: val('newProjectStatus') || 'aktiv',
+      summary: val('newProjectSummary').trim(),
+      currentFocus: val('newProjectFocus').trim(),
+      createdAt: new Date().toISOString()
+    });
+    p.updatedAt = p.createdAt;
+    S.projects.unshift(p);
+    selectedProjectId = p.id;
+    save();
+  }
+
+  function cancelNewProject() {
+    selectedProjectId = null;
+    renderProjectsList();
+    renderProjectDetail(null);
+  }
+
+  function updateProjectField(id, field, value) {
+    var p = getProjectById(id); if (!p) return;
+    p[field] = value;
+    p.updatedAt = new Date().toISOString();
+    saveSilent();
+    // Re-render sidebar to reflect title/status changes
+    if (field === 'title' || field === 'status' || field === 'summary' || field === 'currentFocus') {
+      renderProjectsList();
+    }
+  }
+
+  function deleteProject(id) {
+    if (!confirm('Projekt wirklich löschen? Bucket-Items verlieren den Bezug.')) return;
+    S.projects = S.projects.filter(function(p){ return p.id !== id; });
+    // remove projectId links from bucket items
+    S.bucketWeeks.forEach(function(week){
+      week.items.forEach(function(item){
+        if (item.projectId === id) { item.projectId = ''; item.projectRef = ''; item.notes = ''; }
+      });
+    });
+    if (selectedProjectId === id) selectedProjectId = null;
+    save();
+  }
+
+  function candidateFromProject(projectId) {
+    var p = S.projects.find(function(x){ return x.id === projectId; });
+    if (!p) return;
+    var hint = p.nextStep || p.currentFocus || p.summary || '';
+    S.candidateSteps.unshift({
+      id: uid(),
+      title: p.nextStep
+        ? p.nextStep.split('\n')[0].slice(0, 120)
+        : 'Nächsten Schritt für »' + p.title + '« formulieren',
+      whyNow: hint || 'Aus Projektkontext übernommen.',
+      projectId: p.id,
+      projectRef: p.title,
+      type: 'wachstum',
+      createdAt: new Date().toISOString()
+    });
+    save();
+    switchTab('review');
+  }
+
+  // ── Resources ─────────────────────────────────────────
+  function addResource() {
+    var title = val('newResTitle').trim();
+    if (!title) { alert('Bitte einen Ressourcentitel eingeben.'); return; }
+    S.resources.unshift({
+      id: uid(), title: title,
+      url: val('newResUrl').trim(),
+      type: val('newResType').trim(),
+      projectRef: val('newResProject').trim(),
+      reason: val('newResReason').trim(),
+      createdAt: new Date().toISOString()
+    });
+    val('newResTitle',''); val('newResUrl',''); val('newResProject',''); val('newResReason','');
+    document.getElementById('resourceFormWrap').classList.add('hidden');
+    save();
+  }
+
+  function renderResources() {
+    var box = document.getElementById('resourceList'); if (!box) return;
+    if (!S.resources.length) {
+      box.innerHTML = '<div class="smallmeta">Noch keine Ressourcen vorhanden.</div>'; return;
+    }
+    box.innerHTML = S.resources.map(function(r){
+      return '<div class="card">' +
+        '<h3>' + escHtml(r.title) + '</h3>' +
+        '<div class="smallmeta">' + escHtml(r.type || 'other') + (r.projectRef ? ' · ' + escHtml(r.projectRef) : '') + '</div>' +
+        (r.url ? '<div><a target="_blank" rel="noopener noreferrer" href="' + escAttr(r.url) + '">' + escHtml(r.url) + '</a></div>' : '') +
+        (r.reason ? '<div style="margin-top:6px;font-size:0.88rem;color:var(--ink-mid);">' + escHtml(r.reason) + '</div>' : '') +
+      '</div>';
+    }).join('');
+  }
+
+  // ── Review / Candidates ───────────────────────────────
+  function renderQuestions() {
+    var el = document.getElementById('questionList'); if (!el) return;
+    el.innerHTML = DEFAULT_QUESTIONS.map(function(q){
+      return '<div class="card"><strong>' + escHtml(q) + '</strong></div>';
+    }).join('');
+  }
+
+  function addCandidateFromReview() {
+    var raw = val('reviewNotes').trim();
+    if (!raw) { alert('Bitte erst eine Verdichtungsnotiz schreiben.'); return; }
+    S.candidateSteps.unshift({
+      id: uid(), title: raw.split('\n')[0].slice(0, 120),
+      whyNow: raw, projectRef: '', type: 'offen',
+      createdAt: new Date().toISOString()
+    });
+    save();
+  }
+
+  function renderCandidates() {
+    var box = document.getElementById('candidateList'); if (!box) return;
+    if (!S.candidateSteps.length) {
+      box.innerHTML = '<div class="smallmeta">Noch keine Kandidaten vorhanden.</div>'; return;
+    }
+    box.innerHTML = S.candidateSteps.map(function(c){
+      return '<div class="card">' +
+        '<h3>' + escHtml(c.title || '(ohne Titel)') + '</h3>' +
+        '<div class="smallmeta">' + escHtml(c.projectRef || 'ohne Projekt') + ' · ' + escHtml(c.type || 'offen') + '</div>' +
+        (c.whyNow ? '<div style="font-size:0.88rem;color:var(--ink-mid);margin-top:4px;">' + escHtml(c.whyNow) + '</div>' : '') +
+        '<div class="pillrow" style="margin-top:8px;">' +
+          '<button class="btn small" onclick="moveCandidateToBucket(\'' + c.id + '\')">Bewusst übernehmen</button>' +
+          '<button class="btn small ghost" onclick="deleteCandidate(\'' + c.id + '\')" title="Kandidat verwerfen">verwerfen</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function moveCandidateToBucket(id) {
+    var cand = S.candidateSteps.find(function(c){ return c.id === id; });
+    var week = getCurrentWeek();
+    if (!cand || !week) return;
+    var empty = week.items.find(function(i){ return !(i.title || '').trim(); });
+    if (!empty) { alert('Alle zehn Plätze sind bereits belegt. Leere zuerst einen Platz.'); return; }
+    var project = getProjectById(cand.projectId) || findProjectByTitle(cand.projectRef || '');
+    empty.title = cand.title || '';
+    empty.projectId = project ? project.id : '';
+    empty.projectRef = project ? project.title : (cand.projectRef || '');
+    empty.notes = empty.projectRef;
+    empty.details = cand.whyNow ? ('## Warum jetzt?\n' + cand.whyNow) : (empty.details || '');
+    empty.open = true;
+    if (['pflicht','pflege','wachstum','kreativ'].indexOf(cand.type) >= 0) empty.type = cand.type;
+    save();
+  }
+
+  function deleteCandidate(id) {
+    S.candidateSteps = S.candidateSteps.filter(function(c){ return c.id !== id; });
+    save();
+  }
+
+  // ── Markdown ──────────────────────────────────────────
+  function renderMarkdown(src) {
+    var lines = String(src || '').replace(/\r/g,'').split('\n');
+    var out = [], inList = false, paragraph = [];
+    function flushParagraph() { if (!paragraph.length) return; out.push('<p>' + paragraph.join(' ') + '</p>'); paragraph = []; }
+    function closeList() { if (inList) { out.push('</ul>'); inList = false; } }
+    lines.forEach(function(line){
+      var t = line.trim();
+      if (!t) { flushParagraph(); closeList(); return; }
+      var bullet = /^[-*]\s+(.+)$/.exec(t);
+      if (bullet) { flushParagraph(); if (!inList) { out.push('<ul>'); inList = true; } out.push('<li>' + escHtml(bullet[1]) + '</li>'); return; }
+      var h3 = /^###\s+(.+)$/.exec(t); if (h3) { flushParagraph(); closeList(); out.push('<h5>' + escHtml(h3[1]) + '</h5>'); return; }
+      var h2 = /^##\s+(.+)$/.exec(t); if (h2) { flushParagraph(); closeList(); out.push('<h4>' + escHtml(h2[1]) + '</h4>'); return; }
+      var h1 = /^#\s+(.+)$/.exec(t); if (h1) { flushParagraph(); closeList(); out.push('<h3>' + escHtml(h1[1]) + '</h3>'); return; }
+      closeList(); paragraph.push(escHtml(t));
+    });
+    flushParagraph(); closeList();
+    return out.join('') || '<p>Keine Details.</p>';
+  }
+
+  // ── Prompt Studio ─────────────────────────────────────
+  function buildReviewPrompt() {
+    var raw = val('reviewRaw').trim();
+    var projects = S.projects.map(function(p){ return '- ' + p.title + (p.summary ? ': ' + p.summary : ''); }).join('\n') || '- keine Projekte hinterlegt';
+    var resources = S.resources.slice(0, 8).map(function(r){ return '- ' + r.title + (r.reason ? ': ' + r.reason : ''); }).join('\n') || '- keine Ressourcen hinterlegt';
+    var prompt = ['Du hilfst mir dabei, mein diffuses Wochenmaterial für meine Bucket-of-Ten-Methode zu verdichten.','','## Ziel','Analysiere das Material nicht als klassische To-do-Liste, sondern als Mischung aus Kontext, Spannungen, Vermeidung, wichtigen aber nicht dringenden Themen und möglichen Fokusfeldern.','','## Regeln','- Keine banale Produktivitätsrhetorik','- Fokus auf Spiegelung, Verdichtung und qualitative Unterscheidung','- Beschäftigung von echter Priorität unterscheiden','- wichtige, aber nicht dringende Themen sichtbar machen','','## Hinterlegte Projekte',projects,'','## Hinterlegte Ressourcen',resources,'','## Rohmaterial',raw || '(leer)','','## Ausgabe','Gib mir vier Abschnitte:','1. Energiefresser / falsche Dringlichkeiten','2. Wiederkehrende Spannungen / Vermeidung','3. Wichtig, aber nicht dringend','4. Mögliche Fokusfelder dieser Woche','','Formuliere knapp, konkret und ohne Wochenplan.'].join('\n');
+    S.promptDrafts.review = prompt;
+    document.getElementById('promptOut').value = prompt;
+    switchTab('studio'); save();
+  }
+
+  function buildDeepPrompt() {
+    var raw = val('reviewRaw').trim();
+    var prompt = ['Hilf mir in einem tiefen, fragenden Review-Modus dabei, meine Woche nicht nur organisatorisch, sondern auch innerlich zu klären.','','## Haltung','- Stelle gute Fragen statt schneller Lösungen','- Achte auf Wiederholungen, Vermeidung, Ambivalenz und falsche Dringlichkeiten','- Hilf mir, meine eigenen Formulierungen zu finden','- Schlage keine fertige Bucket of Ten vor','','## Material',raw || '(leer)','','## Aufgabe','Führe mich durch 6 bis 8 präzise Fragen, die mir helfen, selbst zu formulieren:','- was mich gerade wirklich zieht','- wovor ich ausweiche','- was nur Busywork ist','- was diese Woche echte Priorität haben sollte','','Halte jede Frage knapp und substanziell.'].join('\n');
+    S.promptDrafts.deep = prompt;
+    document.getElementById('promptOut').value = prompt;
+    switchTab('studio'); save();
+  }
+
+  function buildCleanupPrompt() {
+    var raw = val('jsonIn').trim() || '[Antwort hier einfügen]';
+    var prompt = ['Bereinige die folgende Antwort und überführe sie in valides JSON.','','## Zielstruktur','{','  "candidate_steps": [','    {','      "title": "",','      "projectRef": "",','      "whyNow": "",','      "type": "pflicht|pflege|wachstum|kreativ|offen"','    }','  ]','}','','## Regeln','- Nur valides JSON ausgeben','- Keine Markdown-Formatierung','- Falls etwas fehlt, leere Strings verwenden','','## Eingabe',raw].join('\n');
+    S.promptDrafts.cleanup = prompt;
+    document.getElementById('promptOut').value = prompt;
+    switchTab('studio'); save();
+  }
+
+  function importStructuredJson() {
+    var raw = val('jsonIn').trim();
+    if (!raw) { alert('Bitte erst JSON einfügen.'); return; }
+    try {
+      var parsed = JSON.parse(raw);
+      if (Array.isArray(parsed.candidate_steps)) {
+        parsed.candidate_steps.forEach(function(c){
+          var project = findProjectByTitle(c.projectRef || '');
+          S.candidateSteps.unshift({ id: uid(), title: c.title || '', projectId: project ? project.id : '', projectRef: c.projectRef || '', whyNow: c.whyNow || '', type: c.type || 'offen', createdAt: new Date().toISOString() });
+        });
+        alert(parsed.candidate_steps.length + ' Kandidat(en) importiert.'); save(); return;
+      }
+      alert('Kein unterstütztes Format. Erwartet: { "candidate_steps": [...] }');
+    } catch (e) { alert('Ungültiges JSON: ' + e.message); }
+  }
+
+  function copyField(id) {
+    var el = document.getElementById(id); if (!el || !el.value) return;
+    navigator.clipboard.writeText(el.value).then(function(){ alert('Kopiert.'); }).catch(function(){ el.select(); document.execCommand('copy'); alert('Kopiert.'); });
+  }
+
+  // ── Export / Import ────────────────────────────────────
+  function exportData() {
+    var payload = JSON.stringify(S, null, 2);
+    var blob = new Blob([payload], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'bucket-of-ten-export-' + today() + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  }
+
+  function importData(event) {
+    var file = event.target.files && event.target.files[0]; if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var parsed = JSON.parse(e.target.result);
+        if (!parsed || typeof parsed !== 'object') throw new Error('Kein Objekt');
+        S = parsed; ensureDefaults();
+        if (!S.currentWeekId && S.bucketWeeks[0]) S.currentWeekId = S.bucketWeeks[0].id;
+        save(); alert('Import erfolgreich.');
+      } catch (err) { alert('Import fehlgeschlagen: ' + err.message); }
+    };
+    reader.readAsText(file); event.target.value = '';
+  }
+
+  // ── Demo Data ─────────────────────────────────────────
+  function fillDemoData() {
+    if (S.projects.length || S.resources.length || S.candidateSteps.length) {
+      if (!confirm('Demo-Daten zusätzlich einfügen?')) return;
+    }
+    var now = new Date().toISOString();
+    S.projects.unshift(
+      normalizeProject({ id: uid(), title: 'Bucket-of-Ten-App', status: 'aktiv', summary: 'Kernprojekt: Weekly Selection System statt normalem Task-Manager.', currentFocus: 'Projekte-Tab und Datenmigration sauber abschließen.', nextStep: 'Phase 2 reviewen, dann Roadmap für Phase 3 skizzieren.', obsidianUrl: 'obsidian://bucket-of-ten', createdAt: now }),
+      normalizeProject({ id: uid(), title: 'Romanprojekt Nabokov', status: 'aktiv', summary: 'Kreativprojekt mit Entwicklungsbedarf, aber ohne äußere Deadline.', currentFocus: 'Strukturentscheidung für Kapitel 3 treffen.', nextStep: 'Eine starke Review-Frage formulieren, die den nächsten Einstieg erleichtert.', createdAt: now }),
+      normalizeProject({ id: uid(), title: 'Freelance-Akquise Q2', status: 'pausiert', summary: 'Potenzielle Auftraggeber identifizieren. Liegt gerade auf Eis.', createdAt: now })
+    );
+    S.resources.unshift(
+      { id: uid(), title: 'Weekly Review', url: 'obsidian://weekly-review', type: 'obsidian', projectRef: 'Bucket-of-Ten-App', reason: 'Rohmaterial für Reset und Auswahl.', createdAt: now },
+      { id: uid(), title: 'GPT-Chat Deep Review', url: 'https://chatgpt.com', type: 'gpt', projectRef: 'Bucket-of-Ten-App', reason: 'Fragenorientierte Reflexion statt bloßer Planung.', createdAt: now }
+    );
+    S.candidateSteps.unshift(
+      { id: uid(), title: 'Roadmap der Bucket-of-Ten-App fertig formulieren', projectRef: 'Bucket-of-Ten-App', projectId: S.projects[0] ? S.projects[0].id : '', whyNow: 'Klares Architekturdenken vor weiterer Umsetzung.', type: 'pflicht', createdAt: now },
+      { id: uid(), title: 'Eine starke Review-Frage für Nabokov ausformulieren', projectRef: 'Romanprojekt Nabokov', projectId: '', whyNow: 'Kreativer Fortschritt ohne äußere Deadline.', type: 'kreativ', createdAt: now },
+      { id: uid(), title: 'Busywork aus der Wochenplanung streichen', projectRef: '', whyNow: 'Reduktionsschritt, damit wichtige nicht dringende Dinge Platz bekommen.', type: 'wachstum', createdAt: now }
+    );
+    if (!getCurrentWeek()) startNewWeek(true);
+    save();
+  }
+
+  // ── Helpers ───────────────────────────────────────────
+  function findProjectByTitle(title) {
+    var needle = String(title || '').trim().toLowerCase();
+    if (!needle) return null;
+    return S.projects.find(function(p){ return String(p.title || '').trim().toLowerCase() === needle; }) || null;
+  }
+
+  load();
+</script>
+</body>
+</html>
