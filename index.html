@@ -587,6 +587,11 @@
       renderAll();
     }
 
+    function saveSilent() {
+      S._lastSaved = new Date().toISOString();
+      localStorage.setItem(LKEY, JSON.stringify(S));
+    }
+
     function load() {
       try {
         var raw = localStorage.getItem(LKEY);
@@ -754,14 +759,16 @@
       var item = findBucketItem(id);
       if (!item) return;
       item.title = value;
-      save();
+      saveSilent();
+      var week = getCurrentWeek();
+      if (week) renderStats(week);
     }
 
     function updateBucketNotes(id, value) {
       var item = findBucketItem(id);
       if (!item) return;
       item.notes = value;
-      save();
+      saveSilent();
     }
 
     function updateBucketType(id, value) {
@@ -789,7 +796,7 @@
       var item = findBucketItem(id);
       if (!item) return;
       item.details = value;
-      save();
+      saveSilent();
     }
 
     function updateBucketProjectRef(id, value) {
@@ -797,7 +804,7 @@
       if (!item) return;
       item.projectRef = value;
       item.notes = value;
-      save();
+      saveSilent();
     }
 
     function fillBucketFromFirstCandidate(bucketId) {
